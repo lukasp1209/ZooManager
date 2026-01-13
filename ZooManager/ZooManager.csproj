@@ -9,18 +9,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Core\Interfaces\" />
-      <Folder Include="Core\Logic\" />
-      <Folder Include="Infrastructure\Persistence\" />
-      <Folder Include="UI\ViewModels\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Page Update="UI\Views\MainWindow.xaml">
         <Generator>MSBuild:Compile</Generator>
         <XamlRuntime>Wpf</XamlRuntime>
         <SubType>Designer</SubType>
       </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     </ItemGroup>
 
 </Project>
