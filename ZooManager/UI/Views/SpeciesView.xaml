@@ -1,0 +1,75 @@
+﻿<UserControl x:Class="ZooManager.UI.Views.SpeciesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="900">
+    <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Linke Seite: Liste der Tierarten -->
+        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+            <DockPanel>
+                <TextBlock Text="Tierarten" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                    <Button Content="+ Neue Art" Padding="8" Click="AddSpecies_Click" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="Art löschen" Padding="8" Margin="0,8,0,0" Click="DeleteSpecies_Click" Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"/>
+                </StackPanel>
+                <ListBox x:Name="SpeciesList" BorderThickness="0" DisplayMemberPath="Name" SelectionChanged="SpeciesList_SelectionChanged"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Rechte Seite -->
+        <Grid Grid.Column="1">
+            <!-- ANZEIGE-MODUS -->
+            <ScrollViewer x:Name="SpeciesDetailsArea" Visibility="Visible">
+                <Border Style="{StaticResource Card}" Margin="0">
+                    <StackPanel>
+                        <TextBlock x:Name="SelectedSpeciesName" Text="Wählen Sie eine Tierart" FontSize="22" FontWeight="Bold" Margin="0,0,0,16"/>
+                        <TextBlock Text="Anforderungen:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="SelectedSpeciesClimate" Text="-" Margin="0,0,0,20"/>
+                        
+                        <Separator Margin="0,10"/>
+                        <TextBlock Text="Konfigurierte Felder:" FontSize="16" FontWeight="SemiBold" Margin="0,10,0,8"/>
+                        <ItemsControl x:Name="ConfiguredFieldsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding FieldName, StringFormat='• \{0\} (Typ: \{1\})'}" Margin="0,4"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </ScrollViewer>
+
+            <!-- EDITOR-MODUS -->
+            <Border x:Name="SpeciesEditorArea" Style="{StaticResource Card}" Visibility="Collapsed" VerticalAlignment="Top" Margin="0">
+                <StackPanel>
+                    <TextBlock Text="Tierart Konfigurieren" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+                    
+                    <Label Content="Name der Tierart:"/>
+                    <TextBox x:Name="NewSpeciesName" Margin="0,0,0,12" Padding="8"/>
+
+                    <Label Content="Benötigtes Klima (ANF2):"/>
+                    <ComboBox x:Name="NewSpeciesClimate" Margin="0,0,0,12" Padding="8">
+                            <ComboBoxItem Content="Tropical"/>
+                            <ComboBoxItem Content="Arid"/>
+                            <ComboBoxItem Content="Polar"/>
+                            <ComboBoxItem Content="Temperate"/>
+                        </ComboBox>
+
+                    <Label Content="Min. Platz pro Tier (qm):"/>
+                    <TextBox x:Name="NewSpeciesSpace" Margin="0,0,0,20" Padding="8"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelSpeciesEditor_Click"/>
+                        <Button Content="Speichern" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewSpecies_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

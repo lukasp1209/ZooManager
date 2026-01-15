@@ -4,18 +4,11 @@ using ZooManager.UI.Views;
 
 namespace ZooManager
 {
-    public partial class App : Application
+    public partial class App
     {
-        protected override void OnStartup(StartupEventArgs e)
+        private void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
-            var loginView = new LoginView
-            {
-                DataContext = new LoginViewModel()
-            };
-
-            loginView.Show();
         }
     }
 }

@@ -3,7 +3,11 @@
 public class Species
 {
     public int Id { get; set; }
-    public string CommonName { get; set; }
-    public string ScientificName { get; set; }
-    public string HabitatType { get; set; } // e.g. Savanna, Rainforest
-}
+    public string Name { get; set; }
+    
+        public string RequiredClimate { get; set; }
+        public bool NeedsWater { get; set; }
+        public double MinSpacePerAnimal { get; set; }
+
+        public List<SpeciesFieldDefinition> CustomFields { get; set; } = new List<SpeciesFieldDefinition>();
+    }

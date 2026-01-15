@@ -1,23 +1,75 @@
-﻿using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace ZooManager;
-
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
-public partial class MainWindow : Window
+namespace ZooManager.UI.Views
 {
-    public MainWindow()
+    public partial class MainWindow : Window
     {
-        InitializeComponent();
+        public MainWindow()
+        {
+            InitializeComponent();
+            MainContentPresenter.Content = new DashboardView();
+            
+            TestData();
+        }
+
+        private void TestData()
+        {
+            try 
+            {
+                var db = new ZooManager.Infrastructure.Persistence.MySqlPersistenceService(
+                    ZooManager.Infrastructure.Configuration.DatabaseConfig.GetConnectionString());
+                
+                var animals = db.LoadAnimals();
+                foreach (var a in animals)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Gefundenes Tier: {a.Name}");
+                    if (a.Attributes.ContainsKey("Mähnenfarbe"))
+                        System.Diagnostics.Debug.WriteLine($" - Attribut: {a.Attributes["Mähnenfarbe"]}");
+                }
+            }
+                catch (Exception ex)
+                {
+                    // Statt MessageBox.Show:
+                    ZooMessageBox.Show("Datenbankfehler: " + ex.Message, "Fehler beim Laden");
+                }
+
+        }
+
+        private void NavButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag != null)
+            {
+                string target = button.Tag.ToString();
+                
+                switch (target)
+                {
+                    case "Dashboard":
+                        MainContentPresenter.Content = new DashboardView();
+                        break;
+                    case "Animals":
+                        MainContentPresenter.Content = new AnimalsView();
+                        break;
+                    case "Species":
+                        MainContentPresenter.Content = new SpeciesView();
+                        break;
+                    case "Enclosures":
+                        MainContentPresenter.Content = new EnclosuresView();
+                        break;
+                    case "Employees":
+                        MainContentPresenter.Content = new EmployeesView();
+                        break;
+                    case "Events":
+                        MainContentPresenter.Content = new EventsView();
+                        break;
+                    case "Reports":
+                        MainContentPresenter.Content = new ReportsView();
+                        break;
+                    case "Settings":
+                        MainContentPresenter.Content = new SettingsView();
+                        break;
+                }
+            }
+        }
     }
 }

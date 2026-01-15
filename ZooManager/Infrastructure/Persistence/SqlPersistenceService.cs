@@ -1,17 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
 using System.Linq;
 using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 
 namespace ZooManager.Infrastructure.Persistence
 {
-    public class SqlPersistenceService : IPersistenceService
+    public class MySqlPersistenceService : IPersistenceService
     {
         private readonly string _connectionString;
 
-        public SqlPersistenceService(string connectionString)
+        public MySqlPersistenceService(string connectionString)
         {
             _connectionString = connectionString;
         }
@@ -19,10 +20,10 @@ namespace ZooManager.Infrastructure.Persistence
         private IEnumerable<T> Load<T>(string tableName) where T : new()
         {
             var result = new List<T>();
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
-                var command = new SqlCommand($"SELECT * FROM {tableName}", connection);
+                var command = new MySqlCommand($"SELECT * FROM {tableName}", connection);
                 using (var reader = command.ExecuteReader())
                 {
                     var props = typeof(T).GetProperties();
@@ -31,11 +32,15 @@ namespace ZooManager.Infrastructure.Persistence
                         var item = new T();
                         foreach (var prop in props)
                         {
-                            if (!reader.IsDBNull(reader.GetOrdinal(prop.Name)))
+                            try 
                             {
-                                var value = reader[prop.Name];
-                                prop.SetValue(item, value);
+                                int ordinal = reader.GetOrdinal(prop.Name);
+                                if (!reader.IsDBNull(ordinal))
+                                {
+                                    prop.SetValue(item, reader.GetValue(ordinal));
+                                }
                             }
+                            catch (IndexOutOfRangeException) { /* Eigenschaft existiert nicht in DB */ }
                         }
                         result.Add(item);
                     }
@@ -44,46 +49,342 @@ namespace ZooManager.Infrastructure.Persistence
             return result;
         }
 
-        private void Save<T>(IEnumerable<T> items, string tableName)
+        //TODO ... Implementierung von Save analog mit MySqlCommand ...
+        
+        public IEnumerable<Animal> LoadAnimals()
         {
-            using (var connection = new SqlConnection(_connectionString))
+            var animals = new List<Animal>();
+
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
-
-                // Für vollständige Funktionalität müssten hier Insert, Update, Delete-Logik implementiert werden.
-                // Für eine einfache Implementierung könnten wir z.B. alle vorherigen Einträge löschen und neu einfügen.
-                var deleteCommand = new SqlCommand($"DELETE FROM {tableName}", connection);
-                deleteCommand.ExecuteNonQuery();
-
-                foreach (var item in items)
+                
+                // JOIN hinzugefügt, um den Namen der Art zu erhalten
+                var cmd = new MySqlCommand(
+                    @"SELECT a.*, s.Name as SpeciesName 
+                          FROM Animals a 
+                          JOIN Species s ON a.SpeciesId = s.Id", connection);
+                
+                using (var reader = cmd.ExecuteReader())
                 {
-                    var props = typeof(T).GetProperties();
-                    var columnNames = string.Join(", ", props.Select(p => p.Name));
-                    var paramNames = string.Join(", ", props.Select(p => "@" + p.Name));
-                    var insertCommand = new SqlCommand($"INSERT INTO {tableName} ({columnNames}) VALUES ({paramNames})", connection);
-
-                    foreach (var prop in props)
+                    while (reader.Read())
                     {
-                        insertCommand.Parameters.AddWithValue("@" + prop.Name, prop.GetValue(item) ?? DBNull.Value);
+                        animals.Add(new Animal
+                        {
+                            Id = reader.GetInt32("Id"),
+                            Name = reader.GetString("Name"),
+                            SpeciesId = reader.GetInt32("SpeciesId"),
+                            SpeciesName = reader.GetString("SpeciesName"), // Art-Name zuweisen
+                            EnclosureId = reader.GetInt32("EnclosureId")
+                        });
                     }
-                    insertCommand.ExecuteNonQuery();
+                }
+
+                foreach (var animal in animals)
+                {
+                    var eventCmd = new MySqlCommand(
+                        "SELECT EventDate, EventType, Description FROM AnimalEvents WHERE AnimalId = @id ORDER BY EventDate DESC", connection);
+                    eventCmd.Parameters.AddWithValue("@id", animal.Id);
+                    
+                    using (var reader = eventCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            animal.Events.Add(new AnimalEvent
+                            {
+                                Date = reader.GetDateTime("EventDate"),
+                                Type = reader.GetString("EventType"),
+                                Description = reader.GetString("Description")
+                            });
+                        }
+                    }
+                    
+                    var attrCmd = new MySqlCommand(
+                        @"SELECT d.FieldName, a.ValueText 
+                          FROM AnimalAttributes a 
+                          JOIN SpeciesFieldDefinitions d ON a.FieldDefinitionId = d.Id 
+                          WHERE a.AnimalId = @id", connection);
+                    attrCmd.Parameters.AddWithValue("@id", animal.Id);
+
+                    using (var reader = attrCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string key = reader.GetString("FieldName");
+                            string val = reader.GetString("ValueText");
+                            animal.Attributes[key] = val;
+                        }
+                    }
+                }
+            }
+            return animals;
+        }
+        public IEnumerable<Employee> LoadEmployees()
+        {
+            var employees = new List<Employee>();
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                
+                var empCmd = new MySqlCommand("SELECT Id, FirstName, LastName FROM Employees", connection);
+                using (var reader = empCmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        employees.Add(new Employee
+                        {
+                            Id = reader.GetInt32("Id"),
+                            FirstName = reader.GetString("FirstName"),
+                            LastName = reader.GetString("LastName")
+                        });
+                    }
+                }
+                
+                foreach (var employee in employees)
+                {
+                    var qualCmd = new MySqlCommand(
+                        "SELECT SpeciesId FROM EmployeeQualifications WHERE EmployeeId = @empId", connection);
+                    qualCmd.Parameters.AddWithValue("@empId", employee.Id);
+
+                    using (var reader = qualCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            employee.QualifiedSpeciesIds.Add(reader.GetInt32("SpeciesId"));
+                        }
+                    }
+                }
+            }
+            return employees;
+        }
+
+        public void SaveEmployeeQualifications(int employeeId, List<int> speciesIds)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    var deleteCmd = new MySqlCommand(
+                        "DELETE FROM EmployeeQualifications WHERE EmployeeId = @empId", connection, transaction);
+                    deleteCmd.Parameters.AddWithValue("@empId", employeeId);
+                    deleteCmd.ExecuteNonQuery();
+                    
+                    foreach (var sId in speciesIds)
+                    {
+                        var insertCmd = new MySqlCommand(
+                            "INSERT INTO EmployeeQualifications (EmployeeId, SpeciesId) VALUES (@empId, @sId)", 
+                            connection, transaction);
+                        insertCmd.Parameters.AddWithValue("@empId", employeeId);
+                        insertCmd.Parameters.AddWithValue("@sId", sId);
+                        insertCmd.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+            }
+        }
+        public IEnumerable<Enclosure> LoadEnclosures()
+        {
+            var enclosures = new List<Enclosure>();
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                var cmd = new MySqlCommand("SELECT * FROM Enclosures", connection);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        enclosures.Add(new Enclosure
+                        {
+                            Id = reader.GetInt32("Id"),
+                            Name = reader.GetString("Name"),
+                            ClimateType = reader.GetString("ClimateType"),
+                            HasWaterAccess = reader.GetBoolean("HasWaterAccess"),
+                            TotalArea = reader.GetDouble("TotalArea"),
+                            MaxCapacity = reader.GetInt32("MaxCapacity")
+                        });
+                    }
+                }
+            }
+            return enclosures;
+        }
+
+        public IEnumerable<Species> LoadSpecies()
+        {
+            var speciesList = new List<Species>();
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                var cmd = new MySqlCommand("SELECT * FROM Species", connection);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        speciesList.Add(new Species
+                        {
+                            Id = reader.GetInt32("Id"),
+                            Name = reader.GetString("Name"),
+                            RequiredClimate = reader.IsDBNull(reader.GetOrdinal("RequiredClimate")) ? null : reader.GetString("RequiredClimate"),
+                            NeedsWater = reader.GetBoolean("NeedsWater"),
+                            MinSpacePerAnimal = reader.GetDouble("MinSpacePerAnimal")
+                        });
+                    }
+                }
+            }
+            return speciesList;
+        }
+
+        public IEnumerable<ZooEvent> LoadEvents()
+        {
+            var events = new List<ZooEvent>();
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                var cmd = new MySqlCommand("SELECT * FROM AnimalEvents", connection);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        events.Add(new ZooEvent
+                        {
+                            Start = reader.GetDateTime("EventDate"),
+                            Title = reader.GetString("EventType"),
+                            Description = reader.GetString("Description")
+                        });
+                    }
+                }
+            }
+            return events;
+        }
+
+        public void SaveEmployees(IEnumerable<Employee> employees)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                foreach (var emp in employees)
+                {
+                    var cmd = new MySqlCommand(
+                        @"INSERT INTO Employees (Id, FirstName, LastName) 
+                          VALUES (@id, @fn, @ln) 
+                          ON DUPLICATE KEY UPDATE FirstName=@fn, LastName=@ln", connection);
+                    cmd.Parameters.AddWithValue("@id", emp.Id);
+                    cmd.Parameters.AddWithValue("@fn", emp.FirstName);
+                    cmd.Parameters.AddWithValue("@ln", emp.LastName);
+                    cmd.ExecuteNonQuery();
+                    
+                    SaveEmployeeQualifications(emp.Id, emp.QualifiedSpeciesIds);
                 }
             }
         }
 
-        public IEnumerable<Animal> LoadAnimals() => Load<Animal>("Animals");
-        public void SaveAnimals(IEnumerable<Animal> animals) => Save(animals, "Animals");
+        public void SaveEnclosures(IEnumerable<Enclosure> enclosures)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                foreach (var enc in enclosures)
+                {
+                    var cmd = new MySqlCommand(
+                        @"INSERT INTO Enclosures (Id, Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) 
+                          VALUES (@id, @n, @c, @w, @a, @cap) 
+                          ON DUPLICATE KEY UPDATE Name=@n, ClimateType=@c, HasWaterAccess=@w, TotalArea=@a, MaxCapacity=@cap", connection);
+                    cmd.Parameters.AddWithValue("@id", enc.Id);
+                    cmd.Parameters.AddWithValue("@n", enc.Name);
+                    cmd.Parameters.AddWithValue("@c", enc.ClimateType);
+                    cmd.Parameters.AddWithValue("@w", enc.HasWaterAccess);
+                    cmd.Parameters.AddWithValue("@a", enc.TotalArea);
+                    cmd.Parameters.AddWithValue("@cap", enc.MaxCapacity);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
 
-        public IEnumerable<Species> LoadSpecies() => Load<Species>("Species");
-        public void SaveSpecies(IEnumerable<Species> species) => Save(species, "Species");
+        public void SaveSpecies(IEnumerable<Species> speciesList)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                foreach (var s in speciesList)
+                {
+                    var cmd = new MySqlCommand(
+                        @"INSERT INTO Species (Id, Name, RequiredClimate, NeedsWater, MinSpacePerAnimal) 
+                          VALUES (@id, @n, @c, @w, @s) 
+                          ON DUPLICATE KEY UPDATE Name=@n, RequiredClimate=@c, NeedsWater=@w, MinSpacePerAnimal=@s", connection);
+                    cmd.Parameters.AddWithValue("@id", s.Id);
+                    cmd.Parameters.AddWithValue("@n", s.Name);
+                    cmd.Parameters.AddWithValue("@c", s.RequiredClimate);
+                    cmd.Parameters.AddWithValue("@w", s.NeedsWater);
+                    cmd.Parameters.AddWithValue("@s", s.MinSpacePerAnimal);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
 
-        public IEnumerable<Enclosure> LoadEnclosures() => Load<Enclosure>("Enclosures");
-        public void SaveEnclosures(IEnumerable<Enclosure> enclosures) => Save(enclosures, "Enclosures");
+        public void SaveEvents(IEnumerable<ZooEvent> events)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                foreach (var ev in events)
+                {
+                    var cmd = new MySqlCommand(
+                        "INSERT INTO AnimalEvents (EventDate, EventType, Description) VALUES (@d, @t, @desc)", connection);
+                    cmd.Parameters.AddWithValue("@d", ev.Start);
+                    cmd.Parameters.AddWithValue("@t", ev.Title);
+                    cmd.Parameters.AddWithValue("@desc", ev.Description);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
 
-        public IEnumerable<Employee> LoadEmployees() => Load<Employee>("Employees");
-        public void SaveEmployees(IEnumerable<Employee> employees) => Save(employees, "Employees");
+        public void AddAnimalEvent(int animalId, AnimalEvent ev)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                var cmd = new MySqlCommand(
+                    "INSERT INTO AnimalEvents (AnimalId, EventDate, EventType, Description) VALUES (@aid, @d, @t, @desc)", connection);
+            cmd.Parameters.AddWithValue("@aid", animalId);
+                cmd.Parameters.AddWithValue("@d", ev.Date);
+                cmd.Parameters.AddWithValue("@t", ev.Type);
+                cmd.Parameters.AddWithValue("@desc", ev.Description);
+                cmd.ExecuteNonQuery();
+            }
+        }
 
-        public IEnumerable<ZooEvent> LoadEvents() => Load<ZooEvent>("Events");
-        public void SaveEvents(IEnumerable<ZooEvent> events) => Save(events, "Events");
+        public void SaveAnimals(IEnumerable<Animal> animals)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                foreach (var animal in animals)
+                {
+                    var cmd = new MySqlCommand(
+                        @"INSERT INTO Animals (Id, Name, SpeciesId, EnclosureId) 
+                          VALUES (@id, @n, @sid, @eid) 
+                          ON DUPLICATE KEY UPDATE Name=@n, SpeciesId=@sid, EnclosureId=@eid", connection);
+                    cmd.Parameters.AddWithValue("@id", animal.Id);
+                    cmd.Parameters.AddWithValue("@n", animal.Name);
+                    cmd.Parameters.AddWithValue("@sid", animal.SpeciesId);
+                    cmd.Parameters.AddWithValue("@eid", animal.EnclosureId);
+                    cmd.ExecuteNonQuery();
+                    
+                    foreach (var attr in animal.Attributes)
+                    {
+                        var attrCmd = new MySqlCommand(
+                            @"INSERT INTO AnimalAttributes (AnimalId, FieldDefinitionId, ValueText) 
+                              SELECT @aid, Id, @val FROM SpeciesFieldDefinitions WHERE FieldName = @fname AND SpeciesId = @sid
+                              ON DUPLICATE KEY UPDATE ValueText=@val", connection);
+                        attrCmd.Parameters.AddWithValue("@aid", animal.Id);
+                        attrCmd.Parameters.AddWithValue("@val", attr.Value.ToString());
+                        attrCmd.Parameters.AddWithValue("@fname", attr.Key);
+                        attrCmd.Parameters.AddWithValue("@sid", animal.SpeciesId);
+                        attrCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
     }
 }
