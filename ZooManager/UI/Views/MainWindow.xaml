@@ -57,13 +57,12 @@
                     <Button Content="Gehege" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Enclosures"/>
                     <Button Content="Mitarbeiter" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Employees"/>
                     <Button Content="Fütterung" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="FeedingPlan"/>
-                    <Button Content="Events" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Events"/>
+                    
                         
 
                         <Separator Margin="0,16"/>
-
+                        <Button Content="Events" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Events"/>  
                         <Button Content="Statistik" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Reports"/>
-                        <Button Content="Einstellungen" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Settings"/>
                     </StackPanel>
                 </Border>
 

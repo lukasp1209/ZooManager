@@ -40,7 +40,6 @@
                         <DataTemplate>
                             <Border BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="0,10">
                                 <DockPanel>
-                                    <!-- Deutsches Format: Wochentag, Datum - Zeit -->
                                     <TextBlock Text="{Binding NextFeedingTime, StringFormat='\{0:ddd, dd.MM. HH:mm\} Uhr'}" FontSize="16" FontWeight="Bold" Width="160"/>
                                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="10,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding SpeciesName}" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>

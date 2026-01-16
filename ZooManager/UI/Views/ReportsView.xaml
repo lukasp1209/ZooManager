@@ -46,14 +46,12 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="200"/> <!-- Diagramm Bereich -->
-                    <RowDefinition Height="*"/>    <!-- Tabellen Bereich -->
+                    <RowDefinition Height="200"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-
-                <!-- NUR DIESES TextBlock-Element darf x:Name="ReportTitle" haben -->
+                
                 <TextBlock x:Name="ReportTitle" Text="Analyse-Dashboard" Grid.Row="0" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
 
-                <!-- VISUELLES DIAGRAMM (Balken) -->
                 <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="8" Padding="16" Margin="0,0,0,20">
                     <DockPanel>
                         <TextBlock Text="Visuelle Analyse" DockPanel.Dock="Top" FontWeight="SemiBold" Margin="0,0,0,10" Foreground="{StaticResource TextMutedBrush}"/>
@@ -66,7 +64,6 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Bottom" Margin="10,0">
-                                        <!-- Der eigentliche Balken -->
                                         <Border Background="{StaticResource PrimaryBrush}" 
                                                 Height="{Binding BarHeight}" 
                                                 Width="30" 
@@ -84,7 +81,7 @@
                     </DockPanel>
                 </Border>
 
-                <!-- DETAILLIERTE DATENTABELLE -->
+                <!-- DATENTABELLE -->
                 <DataGrid x:Name="ReportDataGrid" Grid.Row="2" 
                           AutoGenerateColumns="True" 
                           IsReadOnly="True" 

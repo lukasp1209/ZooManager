@@ -67,9 +67,6 @@ namespace ZooManager.UI.Views
                     case "Reports":
                         MainContentPresenter.Content = new ReportsView();
                         break;
-                    case "Settings":
-                        MainContentPresenter.Content = new SettingsView();
-                        break;
                 }
             }
         }

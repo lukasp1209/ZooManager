@@ -20,23 +20,21 @@ namespace ZooManager.UI.Views
             var allAnimals = db.LoadAnimals().ToList();
             var allEnclosures = db.LoadEnclosures().ToList();
             var allEmployees = db.LoadEmployees().ToList();
-            var allEvents = db.LoadEvents().ToList(); // Events laden
-
-            // Haupt-Stats
+            var allEvents = db.LoadEvents().ToList();
+            
             TotalAnimalsText.Text = allAnimals.Count.ToString();
             TotalEnclosuresText.Text = allEnclosures.Count.ToString();
             TotalEmployeesText.Text = allEmployees.Count.ToString(); 
-
-            // Fütterungs-Vorschau (Deutsch sortiert)
+            
             FeedingPreviewList.ItemsSource = allAnimals
                 .OrderBy(a => a.NextFeedingTime)
                 .Take(3).ToList();
-
-            // Events Vorschau
+            
             EventsPreviewList.ItemsSource = allEvents
                 .Where(e => e.Start >= System.DateTime.Now)
                 .OrderBy(e => e.Start)
-                .Take(3).ToList();
+                .Take(3)
+                .ToList();
         }
 
         private void OpenFeedingPlan_Click(object sender, System.Windows.RoutedEventArgs e)
