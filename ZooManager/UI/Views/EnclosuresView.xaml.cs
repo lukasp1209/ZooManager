@@ -33,6 +33,20 @@ namespace ZooManager.UI.Views
             AllAnimalsSelector.ItemsSource = _allAnimals;
         }
 
+        private void EnclosureList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (EnclosureList.SelectedItem is Enclosure selected)
+            {
+                SelectedEnclosureTitle.Text = selected.Name;
+                DetailClimate.Text = selected.ClimateType;
+                DetailArea.Text = $"{selected.TotalArea} qm";
+                DetailCapacity.Text = $"{selected.MaxCapacity} Tiere";
+
+                EnclosureDetailsArea.Visibility = Visibility.Visible;
+                EnclosureEditorArea.Visibility = Visibility.Collapsed;
+            }
+        }
+
         private void AssignAnimal_Click(object sender, RoutedEventArgs e)
         {
             if (EnclosureList.SelectedItem is Enclosure selectedEnclosure && 

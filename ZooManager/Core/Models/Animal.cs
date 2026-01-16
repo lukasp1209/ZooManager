@@ -12,6 +12,7 @@ namespace ZooManager.Core.Models
         public int EnclosureId { get; set; }
         public Dictionary<string, object> Attributes { get; set; } = new Dictionary<string, object>();
         public List<AnimalEvent> Events { get; set; } = new List<AnimalEvent>();
+        public System.DateTime NextFeedingTime { get; set; } 
     }
 
     public class AnimalEvent

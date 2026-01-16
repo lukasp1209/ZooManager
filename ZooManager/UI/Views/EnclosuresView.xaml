@@ -7,97 +7,111 @@
              d:DesignHeight="600" d:DesignWidth="800">
     <Grid Margin="24">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Style="{StaticResource Card}" Margin="0,0,12,0">
-            <StackPanel>
-                <TextBlock Text="Anlagen Übersicht" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
-                    <StackPanel Margin="0,0,0,12">
-                        <Button Content="+ Neue Anlage" Padding="8" Click="AddEnclosure_Click" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"/>
-                        <Button Content="Anlage löschen" Padding="8" Margin="0,8,0,0" Click="DeleteEnclosure_Click" Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"/>
-                    </StackPanel>
-                    <ListBox x:Name="EnclosureList" Height="380">
-                    <!-- Das hier hat gefehlt: Ein Template für die Anzeige -->
+        <!-- Linke Seite: Anlagenliste -->
+        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+            <DockPanel>
+                <TextBlock Text="Anlagen Übersicht" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                    <Button Content="+ Neue Anlage" Padding="8" Click="AddEnclosure_Click" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="Anlage löschen" Padding="8" Margin="0,8,0,0" Click="DeleteEnclosure_Click" Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"/>
+                </StackPanel>
+                <ListBox x:Name="EnclosureList" BorderThickness="0" SelectionChanged="EnclosureList_SelectionChanged">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="0,4">
                                 <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding ClimateType}" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                                    <TextBlock Text=" | Max: " FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                                    <TextBlock Text="{Binding MaxCapacity}" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
-                                </StackPanel>
+                                <TextBlock Text="{Binding ClimateType, StringFormat='Klima: {0}'}" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-            </StackPanel>
+            </DockPanel>
         </Border>
 
-            <!-- Rechte Seite -->
-            <Grid Grid.Column="1">
-                <!-- ANZEIGE- UND ZUWEISUNGSMODUS -->
-                <ScrollViewer x:Name="EnclosureDetailsArea" Visibility="Visible">
-                    <Border Style="{StaticResource Card}" Margin="0">
-                        <StackPanel>
-                            <TextBlock Text="Anlagen-Verwaltung (ANF2)" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
-                            
-                            <!-- Sektion: Tier zuordnen -->
-                            <TextBlock Text="Tier in dieses Gehege umziehen:" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                            <Grid Margin="0,0,0,20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ComboBox x:Name="AllAnimalsSelector" DisplayMemberPath="Name" Margin="0,0,8,0"/>
-                                <Button Grid.Column="1" Content="Zuweisen" Padding="15,5" Click="AssignAnimal_Click"/>
-                            </Grid>
-
-                            <Separator Margin="0,0,0,20"/>
-
-                            <!-- Eigenschaften-Anzeige -->
-                            <Label Content="Aktueller Klimatyp:"/>
-                            <TextBlock Text="{Binding SelectedItem.ClimateType, ElementName=EnclosureList}" FontWeight="Bold" Margin="5,0,0,10"/>
-
-                            <TextBlock Text="Max. Kapazität:" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding SelectedItem.MaxCapacity, ElementName=EnclosureList}" FontWeight="Bold" Margin="5,0,0,10"/>
-
-                            <TextBlock Text="* Das System prüft Klima, Platz und Wasserzugang gemäß ANF2."
-                                       Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="0,20,0,0" FontStyle="Italic"/>
-                        </StackPanel>
-                    </Border>
-                </ScrollViewer>
-
-                <!-- EDITOR-MODUS (Neue Anlage) -->
-                <Border x:Name="EnclosureEditorArea" Style="{StaticResource Card}" Visibility="Collapsed" VerticalAlignment="Top" Margin="0">
+        <!-- Rechte Seite -->
+        <Grid Grid.Column="1">
+            <!-- ANZEIGE-MODUS -->
+            <ScrollViewer x:Name="EnclosureDetailsArea" Visibility="Visible">
+                <Border Style="{StaticResource Card}" Margin="0">
                     <StackPanel>
-                        <TextBlock Text="Neue Anlage anlegen" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <TextBlock x:Name="SelectedEnclosureTitle" Text="Wählen Sie eine Anlage" FontSize="24" FontWeight="Bold" Margin="0,0,0,16"/>
                         
-                        <Label Content="Name der Anlage:"/>
-                        <TextBox x:Name="NewEnclosureName" Margin="0,0,0,12" Padding="8"/>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <Label Content="Klimatyp:"/>
-                        <ComboBox x:Name="NewEnclosureClimate" Margin="0,0,0,12" Padding="8">
-                            <ComboBoxItem Content="Tropical"/>
-                            <ComboBoxItem Content="Arid"/>
-                            <ComboBoxItem Content="Polar"/>
-                            <ComboBoxItem Content="Temperate"/>
-                        </ComboBox>
+                            <TextBlock Text="Klima:" FontWeight="SemiBold" Margin="0,4,15,4"/>
+                            <TextBlock x:Name="DetailClimate" Text="-" Grid.Column="1" Margin="0,4,0,4"/>
 
-                        <Label Content="Fläche (qm):"/>
-                        <TextBox x:Name="NewEnclosureArea" Margin="0,0,0,12" Padding="8"/>
+                            <TextBlock Text="Fläche:" Grid.Row="1" FontWeight="SemiBold" Margin="0,4,15,4"/>
+                            <TextBlock x:Name="DetailArea" Text="-" Grid.Row="1" Grid.Column="1" Margin="0,4,0,4"/>
 
-                        <Label Content="Max. Kapazität (Tiere):"/>
-                        <TextBox x:Name="NewEnclosureCapacity" Margin="0,0,0,24" Padding="8"/>
+                            <TextBlock Text="Kapazität:" Grid.Row="2" FontWeight="SemiBold" Margin="0,4,15,4"/>
+                            <TextBlock x:Name="DetailCapacity" Text="-" Grid.Row="2" Grid.Column="1" Margin="0,4,0,4"/>
+                            
+                            <TextBlock Text="Wasser:" Grid.Row="3" FontWeight="SemiBold" Margin="0,4,15,4"/>
+                            <TextBlock x:Name="DetailWater" Text="-" Grid.Row="3" Grid.Column="1" Margin="0,4,0,4"/>
+                        </Grid>
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEnclosureEditor_Click"/>
-                            <Button Content="Speichern" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewEnclosure_Click"/>
-                        </StackPanel>
+                        <Separator Margin="0,10"/>
+                        
+                        <!-- ANF2: Tier-Zuweisung -->
+                        <TextBlock Text="Tier zuordnen" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,10"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="AllAnimalsSelector" DisplayMemberPath="Name" Margin="0,0,8,0" Padding="8"/>
+                            <Button Grid.Column="1" Content="Zuweisen" Padding="20,8" Click="AssignAnimal_Click" Style="{StaticResource NavButton}" Background="#E8F5E9"/>
+                        </Grid>
                     </StackPanel>
                 </Border>
-            </Grid>
+            </ScrollViewer>
+
+            <!-- EDITOR-MODUS -->
+            <Border x:Name="EnclosureEditorArea" Style="{StaticResource Card}" Visibility="Collapsed" VerticalAlignment="Top" Margin="0">
+                <StackPanel>
+                    <TextBlock Text="Neue Anlage anlegen" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+                    
+                    <Label Content="Name der Anlage:"/>
+                    <TextBox x:Name="NewEnclosureName" Margin="0,0,0,12" Padding="8"/>
+
+                    <Label Content="Klimatyp (ANF2):"/>
+                    <ComboBox x:Name="NewEnclosureClimate" Margin="0,0,0,12" Padding="8">
+                        <ComboBoxItem Content="Tropisch"/>
+                        <ComboBoxItem Content="Trocken"/>
+                        <ComboBoxItem Content="Polar"/>
+                        <ComboBoxItem Content="Gemäßigt"/>
+                    </ComboBox>
+
+                    <!-- Neu: Wasser-Merkmal -->
+                    <CheckBox x:Name="NewEnclosureHasWater" Content="Wasserzugang vorhanden (Teich/Pool)" Margin="0,0,0,12" FontWeight="SemiBold"/>
+
+                    <Label Content="Fläche (m²):"/>
+                    <TextBox x:Name="NewEnclosureArea" Margin="0,0,0,12" Padding="8"/>
+
+                    <Label Content="Max. Kapazität:"/>
+                    <TextBox x:Name="NewEnclosureCapacity" Margin="0,0,0,24" Padding="8"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEnclosureEditor_Click"/>
+                        <Button Content="Anlage speichern" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewEnclosure_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </Grid>
+    </Grid>
 </UserControl>

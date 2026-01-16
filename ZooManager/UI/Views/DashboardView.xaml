@@ -10,22 +10,70 @@
         <UniformGrid Columns="3" Margin="0,24,0,0">
             <Border Style="{StaticResource Card}">
                 <StackPanel>
-                    <TextBlock Text="Total Animals" Foreground="{StaticResource TextMutedBrush}"/>
+                    <TextBlock Text="Tiere" Foreground="{StaticResource TextMutedBrush}"/>
                     <TextBlock x:Name="TotalAnimalsText" Text="0" FontSize="32" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
             <Border Style="{StaticResource Card}">
                 <StackPanel>
-                    <TextBlock Text="Enclosures" Foreground="{StaticResource TextMutedBrush}"/>
+                    <TextBlock Text="Gehege" Foreground="{StaticResource TextMutedBrush}"/>
                     <TextBlock x:Name="TotalEnclosuresText" Text="0" FontSize="32" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
             <Border Style="{StaticResource Card}">
                 <StackPanel>
-                    <TextBlock Text="Employees" Foreground="{StaticResource TextMutedBrush}"/>
+                    <TextBlock Text="Mitarbeiter" Foreground="{StaticResource TextMutedBrush}"/>
                     <TextBlock x:Name="TotalEmployeesText" Text="0" FontSize="32" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
         </UniformGrid>
-    </StackPanel>
-</UserControl>
+        <!-- FEEDING PREVIEW -->
+        <Border Style="{StaticResource Card}" Margin="0,24,0,0">
+            <StackPanel>
+                <Grid Margin="0,0,0,15">
+                    <TextBlock Text="Nächste Fütterungen" FontSize="18" FontWeight="SemiBold"/>
+                    <Button Content="Gesamten Plan öffnen" HorizontalAlignment="Right" Style="{StaticResource NavButton}" Click="OpenFeedingPlan_Click"/>
+                </Grid>
+
+                <ItemsControl x:Name="FeedingPreviewList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="0,10">
+                                <DockPanel>
+                                    <!-- Deutsches Format: Wochentag, Datum - Zeit -->
+                                    <TextBlock Text="{Binding NextFeedingTime, StringFormat='\{0:ddd, dd.MM. HH:mm\} Uhr'}" FontSize="16" FontWeight="Bold" Width="160"/>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="10,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SpeciesName}" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+            <!-- EVENTS PREVIEW (Neu) -->
+            <Border Style="{StaticResource Card}" Margin="0,24,0,0">
+                <StackPanel>
+                    <Grid Margin="0,0,0,15">
+                        <TextBlock Text="Zoo Veranstaltungen" FontSize="18" FontWeight="SemiBold"/>
+                        <Button Content="Alle Events" HorizontalAlignment="Right" Style="{StaticResource NavButton}" Click="OpenEvents_Click"/>
+                    </Grid>
+
+                    <ItemsControl x:Name="EventsPreviewList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="0,10">
+                                    <DockPanel>
+                                        <TextBlock Text="{Binding Start, StringFormat='\{0:ddd, dd.MM. HH:mm\}'}" FontWeight="Bold" Width="130" Foreground="{StaticResource AccentBrush}"/>
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Margin="10,0"/>
+                                        <TextBlock Text="Öffentlich" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </UserControl>

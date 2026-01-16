@@ -74,8 +74,11 @@ namespace ZooManager.Infrastructure.Persistence
                             Id = reader.GetInt32("Id"),
                             Name = reader.GetString("Name"),
                             SpeciesId = reader.GetInt32("SpeciesId"),
-                            SpeciesName = reader.GetString("SpeciesName"), // Art-Name zuweisen
-                            EnclosureId = reader.GetInt32("EnclosureId")
+                            SpeciesName = reader.GetString("SpeciesName"),
+                            EnclosureId = reader.GetInt32("EnclosureId"),
+                            NextFeedingTime = reader.IsDBNull(reader.GetOrdinal("NextFeedingTime")) 
+                                ? DateTime.Now 
+                                : reader.GetDateTime("NextFeedingTime")
                         });
                     }
                 }
@@ -241,21 +244,39 @@ namespace ZooManager.Infrastructure.Persistence
             using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
-                var cmd = new MySqlCommand("SELECT * FROM AnimalEvents", connection);
+                var cmd = new MySqlCommand("SELECT * FROM ZooEvents ORDER BY Start ASC", connection);
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         events.Add(new ZooEvent
                         {
-                            Start = reader.GetDateTime("EventDate"),
-                            Title = reader.GetString("EventType"),
-                            Description = reader.GetString("Description")
+                            Title = reader.GetString("Title"),
+                            Description = reader.GetString("Description"),
+                            Start = reader.GetDateTime("Start")
                         });
                     }
                 }
             }
             return events;
+        }
+
+        public void SaveEvents(IEnumerable<ZooEvent> events)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+                foreach (var ev in events)
+                {
+                    var cmd = new MySqlCommand(
+                        @"INSERT INTO ZooEvents (Title, Description, Start) 
+                          VALUES (@t, @d, @s)", connection);
+                    cmd.Parameters.AddWithValue("@t", ev.Title);
+                    cmd.Parameters.AddWithValue("@d", ev.Description);
+                    cmd.Parameters.AddWithValue("@s", ev.Start);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         public void SaveEmployees(IEnumerable<Employee> employees)
@@ -322,23 +343,6 @@ namespace ZooManager.Infrastructure.Persistence
             }
         }
 
-        public void SaveEvents(IEnumerable<ZooEvent> events)
-        {
-            using (var connection = new MySqlConnection(_connectionString))
-            {
-                connection.Open();
-                foreach (var ev in events)
-                {
-                    var cmd = new MySqlCommand(
-                        "INSERT INTO AnimalEvents (EventDate, EventType, Description) VALUES (@d, @t, @desc)", connection);
-                    cmd.Parameters.AddWithValue("@d", ev.Start);
-                    cmd.Parameters.AddWithValue("@t", ev.Title);
-                    cmd.Parameters.AddWithValue("@desc", ev.Description);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
         public void AddAnimalEvent(int animalId, AnimalEvent ev)
         {
             using (var connection = new MySqlConnection(_connectionString))
@@ -362,13 +366,14 @@ namespace ZooManager.Infrastructure.Persistence
                 foreach (var animal in animals)
                 {
                     var cmd = new MySqlCommand(
-                        @"INSERT INTO Animals (Id, Name, SpeciesId, EnclosureId) 
-                          VALUES (@id, @n, @sid, @eid) 
-                          ON DUPLICATE KEY UPDATE Name=@n, SpeciesId=@sid, EnclosureId=@eid", connection);
+                            @"INSERT INTO Animals (Id, Name, SpeciesId, EnclosureId, NextFeedingTime) 
+                              VALUES (@id, @n, @sid, @eid, @ft) 
+                              ON DUPLICATE KEY UPDATE Name=@n, SpeciesId=@sid, EnclosureId=@eid, NextFeedingTime=@ft", connection);
                     cmd.Parameters.AddWithValue("@id", animal.Id);
                     cmd.Parameters.AddWithValue("@n", animal.Name);
                     cmd.Parameters.AddWithValue("@sid", animal.SpeciesId);
                     cmd.Parameters.AddWithValue("@eid", animal.EnclosureId);
+                    cmd.Parameters.AddWithValue("@ft", animal.NextFeedingTime);
                     cmd.ExecuteNonQuery();
                     
                     foreach (var attr in animal.Attributes)

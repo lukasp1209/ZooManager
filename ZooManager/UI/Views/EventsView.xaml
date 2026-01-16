@@ -5,10 +5,85 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
-    <StackPanel Margin="24">
-        <TextBlock Text="Events" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextMainBrush}"/>
-        <Border Style="{StaticResource Card}" Margin="0,24,0,0">
-            <TextBlock Text="Anstehende Veranstaltungen im Zoo." Foreground="{StaticResource TextMutedBrush}"/>
+    <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Linke Seite: Event Liste -->
+        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+            <DockPanel>
+                <TextBlock Text="Veranstaltungen" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                    <Button Content="+ Neues Event" Padding="8" Click="AddEventUI_Click" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="Event absagen" Padding="8" Margin="0,8,0,0" Click="DeleteEvent_Click" Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"/>
+                </StackPanel>
+                <ListBox x:Name="EventsList" BorderThickness="0" Background="Transparent" SelectionChanged="EventsList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,4">
+                                <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Start, StringFormat='\{0:dd.MM. HH:mm\} Uhr'}" FontSize="12" Foreground="{StaticResource AccentBrush}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
         </Border>
-    </StackPanel>
+
+        <!-- Rechte Seite -->
+        <Grid Grid.Column="1">
+            <!-- ANZEIGE-MODUS -->
+            <ScrollViewer x:Name="EventDetailsArea" Visibility="Visible">
+                <Border Style="{StaticResource Card}" Margin="0">
+                    <StackPanel>
+                        <TextBlock x:Name="SelectedEventTitle" Text="Wählen Sie ein Event" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="SelectedEventTime" Text="-" FontSize="16" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,20"/>
+                        <Separator Margin="0,0,0,20"/>
+                        <TextBlock Text="Beschreibung:" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="SelectedEventDesc" Text="-" TextWrapping="Wrap" FontSize="14"/>
+                    </StackPanel>
+                </Border>
+            </ScrollViewer>
+
+            <!-- EDITOR-MODUS (Neues Event) -->
+            <Border x:Name="EventEditorArea" Style="{StaticResource Card}" Visibility="Collapsed" VerticalAlignment="Top" Margin="0">
+                <StackPanel>
+                    <TextBlock Text="Neues Event planen" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+                    
+                    <Label Content="Titel der Veranstaltung:"/>
+                    <TextBox x:Name="NewEventTitle" Margin="0,0,0,12" Padding="8"/>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <Label Content="Datum:"/>
+                            <DatePicker x:Name="NewEventDate" Padding="5"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                            <Label Content="Stunde:"/>
+                            <ComboBox x:Name="HourSelector" Padding="5"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <Label Content="Minute:"/>
+                            <ComboBox x:Name="MinuteSelector" Padding="5"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Label Content="Beschreibung:"/>
+                    <TextBox x:Name="NewEventDescription" Height="100" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,24" Padding="8"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEventEditor_Click"/>
+                        <Button Content="Speichern &amp; Veröffentlichen" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewEvent_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
 </UserControl>

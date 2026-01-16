@@ -5,10 +5,96 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
-    <StackPanel Margin="24">
-        <TextBlock Text="Reports" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextMainBrush}"/>
-        <Border Style="{StaticResource Card}" Margin="0,24,0,0">
-            <TextBlock Text="Statistiken und Berichte." Foreground="{StaticResource TextMutedBrush}"/>
+    <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Linke Seite: Berichtsauswahl -->
+        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+            <StackPanel>
+                <TextBlock Text="Berichte &amp; Statistik" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+                <ListBox x:Name="ReportTypeList" BorderThickness="0" SelectionChanged="ReportTypeList_SelectionChanged">
+                    <ListBoxItem Content="Bestand nach Tierart" Padding="10"/>
+                    <ListBoxItem Content="Gehege-Auslastung" Padding="10"/>
+                    <ListBoxItem Content="Personal-Qualifikationen" Padding="10"/>
+                </ListBox>
+            </StackPanel>
         </Border>
-    </StackPanel>
+
+        <!-- Rechte Seite: Berichtsanzeige -->
+        <Border Grid.Column="1" Style="{StaticResource Card}">
+            <DockPanel>
+                <TextBlock Text="Bitte wählen Sie einen Bericht" DockPanel.Dock="Top" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+                
+                <DataGrid 
+                          AutoGenerateColumns="True" 
+                          IsReadOnly="True" 
+                          Background="White" 
+                          BorderThickness="1" 
+                          BorderBrush="#EEE"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          AlternatingRowBackground="#F9F9F9">
+                </DataGrid>
+            </DockPanel>
+        </Border>
+
+        <!-- Rechte Seite: Analyse-Zentrum -->
+        <Border Grid.Column="1" Style="{StaticResource Card}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="200"/> <!-- Diagramm Bereich -->
+                    <RowDefinition Height="*"/>    <!-- Tabellen Bereich -->
+                </Grid.RowDefinitions>
+
+                <!-- NUR DIESES TextBlock-Element darf x:Name="ReportTitle" haben -->
+                <TextBlock x:Name="ReportTitle" Text="Analyse-Dashboard" Grid.Row="0" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                <!-- VISUELLES DIAGRAMM (Balken) -->
+                <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="8" Padding="16" Margin="0,0,0,20">
+                    <DockPanel>
+                        <TextBlock Text="Visuelle Analyse" DockPanel.Dock="Top" FontWeight="SemiBold" Margin="0,0,0,10" Foreground="{StaticResource TextMutedBrush}"/>
+                        <ItemsControl x:Name="ChartItemsControl">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="5" VerticalAlignment="Bottom"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel VerticalAlignment="Bottom" Margin="10,0">
+                                        <!-- Der eigentliche Balken -->
+                                        <Border Background="{StaticResource PrimaryBrush}" 
+                                                Height="{Binding BarHeight}" 
+                                                Width="30" 
+                                                CornerRadius="4,4,0,0"
+                                                ToolTip="{Binding ToolTipText}">
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="5" Opacity="0.1" ShadowDepth="1"/>
+                                            </Border.Effect>
+                                        </Border>
+                                        <TextBlock Text="{Binding Label}" FontSize="10" HorizontalAlignment="Center" Margin="0,4,0,0" TextWrapping="Wrap" MaxHeight="30"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+
+                <!-- DETAILLIERTE DATENTABELLE -->
+                <DataGrid x:Name="ReportDataGrid" Grid.Row="2" 
+                          AutoGenerateColumns="True" 
+                          IsReadOnly="True" 
+                          Background="White" 
+                          BorderThickness="1" 
+                          BorderBrush="#EEE"
+                          HeadersVisibility="Column"
+                          AlternatingRowBackground="#F9F9F9">
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>

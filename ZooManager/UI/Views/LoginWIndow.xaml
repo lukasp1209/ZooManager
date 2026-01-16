@@ -1,0 +1,40 @@
+﻿<Window x:Class="ZooManager.UI.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Zoo Manager Login" Height="450" Width="350"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        WindowStartupLocation="CenterScreen">
+    
+    <Border Background="White" CornerRadius="20" BorderBrush="#EEE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" Opacity="0.2" ShadowDepth="0"/>
+        </Border.Effect>
+        
+        <Grid Margin="30">
+            <StackPanel VerticalAlignment="Center">
+                <!-- Zoo Logo Platzhalter -->
+                <Ellipse Width="80" Height="80" Fill="{StaticResource PrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                
+                <TextBlock Text="ZOO MANAGER" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryBrush}"/>
+                <TextBlock Text="Professional Access" FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,30" Foreground="{StaticResource TextMutedBrush}"/>
+
+                <Label Content="Benutzername:"/>
+                <TextBox x:Name="UsernameInput" Padding="10" Margin="0,0,0,15" BorderBrush="#DDD"/>
+
+                <Label Content="Passwort:"/>
+                <PasswordBox x:Name="PasswordInput" Padding="10" Margin="0,0,0,30" BorderBrush="#DDD"/>
+
+                <Button Content="Anmelden" Height="45" Background="{StaticResource PrimaryBrush}" 
+                        Foreground="White" FontWeight="Bold" Click="Login_Click" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                
+                <Button Content="Beenden" Style="{StaticResource NavButton}" HorizontalAlignment="Center" Margin="0,10,0,0" Click="Exit_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

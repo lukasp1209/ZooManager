@@ -15,24 +15,46 @@ namespace ZooManager.UI.Views
 
         private void LoadDashboardStats()
         {
-            try
+            var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            
+            var allAnimals = db.LoadAnimals().ToList();
+            var allEnclosures = db.LoadEnclosures().ToList();
+            var allEmployees = db.LoadEmployees().ToList();
+            var allEvents = db.LoadEvents().ToList(); // Events laden
+
+            // Haupt-Stats
+            TotalAnimalsText.Text = allAnimals.Count.ToString();
+            TotalEnclosuresText.Text = allEnclosures.Count.ToString();
+            TotalEmployeesText.Text = allEmployees.Count.ToString(); 
+
+            // Fütterungs-Vorschau (Deutsch sortiert)
+            FeedingPreviewList.ItemsSource = allAnimals
+                .OrderBy(a => a.NextFeedingTime)
+                .Take(3).ToList();
+
+            // Events Vorschau
+            EventsPreviewList.ItemsSource = allEvents
+                .Where(e => e.Start >= System.DateTime.Now)
+                .OrderBy(e => e.Start)
+                .Take(3).ToList();
+        }
+
+        private void OpenFeedingPlan_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            // Navigation zum Fütterungsplan UserControl
+            var mainWindow = System.Windows.Window.GetWindow(this) as MainWindow;
+            if (mainWindow != null)
             {
-                var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
-
-                // Daten laden und Zählen
-                int animalCount = db.LoadAnimals().Count();
-                int enclosureCount = db.LoadEnclosures().Count();
-                int employeeCount = db.LoadEmployees().Count();
-
-                // UI aktualisieren
-                TotalAnimalsText.Text = animalCount.ToString();
-                TotalEnclosuresText.Text = enclosureCount.ToString();
-                TotalEmployeesText.Text = employeeCount.ToString();
+                mainWindow.MainContentPresenter.Content = new FeedingView();
             }
-            catch (System.Exception ex)
+        }
+
+        private void OpenEvents_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var mainWindow = System.Windows.Window.GetWindow(this) as MainWindow;
+            if (mainWindow != null)
             {
-                // Falls die DB nicht erreichbar ist, zeigen wir eine Fehlermeldung
-                ZooMessageBox.Show("Fehler beim Laden der Dashboard-Statistiken: " + ex.Message);
+                mainWindow.MainContentPresenter.Content = new EventsView();
             }
         }
     }

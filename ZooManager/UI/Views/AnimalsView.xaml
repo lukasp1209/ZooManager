@@ -7,7 +7,7 @@
              d:DesignHeight="600" d:DesignWidth="800">
     <Grid Margin="24">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="300"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -58,6 +58,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/> <!-- Neu für Fütterung -->
                                 </Grid.RowDefinitions>
                                 
                                 <TextBlock Text="Name:" FontWeight="SemiBold" Margin="0,4,12,4"/>
@@ -65,9 +66,12 @@
                                 
                                 <TextBlock Text="Gehege:" Grid.Row="1" FontWeight="SemiBold" Margin="0,4,12,4"/>
                                 <TextBlock x:Name="SelectedAnimalEnclosure" Text="-" Grid.Row="1" Grid.Column="1" Margin="0,4,0,4"/>
-                                
+
+                                <TextBlock Text="Nächste Fütterung:" Grid.Row="2" FontWeight="SemiBold" Margin="0,4,12,4"/>
+                                <TextBlock x:Name="SelectedAnimalFeeding" Text="-" Grid.Row="2" Grid.Column="1" Margin="0,4,0,4" Foreground="{StaticResource AccentBrush}" FontWeight="Bold"/>
+                            
                                 <!-- ANF4: Dynamische Zusatzfelder -->
-                                <ItemsControl x:Name="DynamicAttributesList" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                                <ItemsControl x:Name="DynamicAttributesList" Grid.Row="3" Grid.ColumnSpan="2" Margin="0,10,0,0">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Margin="0,4">
@@ -159,9 +163,22 @@
                     <ComboBox x:Name="SpeciesSelector" DisplayMemberPath="Name" Margin="0,0,0,12" Padding="8"/>
 
                     <Label Content="Gehege:"/>
-                    <ComboBox x:Name="EnclosureSelector" DisplayMemberPath="Name" Margin="0,0,0,24" Padding="8"/>
+                    <ComboBox x:Name="EnclosureSelector" DisplayMemberPath="Name" Margin="0,0,0,12" Padding="8"/>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <!-- Optimierter Bereich für Datum & Uhrzeit -->
+                    <Label Content="Erste Fütterung (Datum &amp; Uhrzeit):"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <DatePicker x:Name="NewAnimalFeedingDate" Grid.Column="0" Margin="0,0,8,0" Padding="5"/>
+                        <ComboBox x:Name="FeedingHourSelector" Grid.Column="1" Margin="0,0,8,0" Padding="5" ToolTip="Stunde"/>
+                        <ComboBox x:Name="FeedingMinuteSelector" Grid.Column="2" Padding="5" ToolTip="Minute"/>
+                    </Grid>
+                    
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
                         <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEditor_Click"/>
                         <Button Content="Speichern" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewAnimal_Click"/>
                     </StackPanel>

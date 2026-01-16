@@ -4,15 +4,21 @@ namespace ZooManager.Infrastructure.Configuration
 {
     public class DatabaseConfig
     {
+        /// <summary>
+        /// Gibt den ConnectionString aus der App.config zurück. 
+        /// Falls keiner konfiguriert ist, wird ein Standard-Fallback genutzt.
+        /// </summary>
         public static string GetConnectionString()
         {
-            return "Server=localhost;Database=ZooManagerDB;Uid=root;Pwd=charlix37;";
-        }
+            var config = ConfigurationManager.ConnectionStrings["ZooManagerDB"];
+            
+            if (config != null)
+            {
+                return config.ConnectionString;
+            }
 
-        // OPTION 2: Aus App.config/Web.config lesen (empfohlen)
-        public static string GetConnectionStringFromConfig()
-        {
-            return ConfigurationManager.ConnectionStrings["ZooManagerDB"].ConnectionString;
+            // Fallback für die lokale Entwicklung
+            return "Server=localhost;Database=ZooManagerDB;Uid=root;Pwd=DEIN_PASSWORT;";
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using ZooManager.Core.Models;
 
 namespace ZooManager.UI.Views
 {
@@ -9,9 +10,8 @@ namespace ZooManager.UI.Views
         {
             InitializeComponent();
             MainContentPresenter.Content = new DashboardView();
-            
-            TestData();
         }
+        
 
         private void TestData()
         {
@@ -30,7 +30,6 @@ namespace ZooManager.UI.Views
             }
                 catch (Exception ex)
                 {
-                    // Statt MessageBox.Show:
                     ZooMessageBox.Show("Datenbankfehler: " + ex.Message, "Fehler beim Laden");
                 }
 
@@ -46,6 +45,9 @@ namespace ZooManager.UI.Views
                 {
                     case "Dashboard":
                         MainContentPresenter.Content = new DashboardView();
+                        break;
+                    case "FeedingPlan":
+                        MainContentPresenter.Content = new FeedingView();
                         break;
                     case "Animals":
                         MainContentPresenter.Content = new AnimalsView();

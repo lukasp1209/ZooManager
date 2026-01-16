@@ -11,6 +11,10 @@ namespace ZooManager.UI.Views
         public AnimalsView()
         {
             InitializeComponent();
+            
+            for (int i = 0; i < 24; i++) FeedingHourSelector.Items.Add(i.ToString("D2"));
+            for (int i = 0; i < 60; i += 5) FeedingMinuteSelector.Items.Add(i.ToString("D2"));
+            
             LoadData();
         }
 
@@ -24,6 +28,9 @@ namespace ZooManager.UI.Views
             EnclosureSelector.ItemsSource = db.LoadEnclosures().ToList();
 
             NewEventDate.SelectedDate = System.DateTime.Now;
+            NewAnimalFeedingDate.SelectedDate = System.DateTime.Now;
+            FeedingHourSelector.SelectedIndex = 12;
+            FeedingMinuteSelector.SelectedIndex = 0;
         }
 
         private void AnimalsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -34,6 +41,8 @@ namespace ZooManager.UI.Views
                 SelectedAnimalSpecies.Text = selectedAnimal.SpeciesName;
                 SelectedAnimalNameDetail.Text = selectedAnimal.Name;
                 SelectedAnimalEnclosure.Text = $"ID: {selectedAnimal.EnclosureId}";
+                
+                SelectedAnimalFeeding.Text = selectedAnimal.NextFeedingTime.ToString("dd.MM.yyyy HH:mm") + " Uhr";
                 
                 EventsList.ItemsSource = selectedAnimal.Events;
                 
@@ -64,13 +73,19 @@ namespace ZooManager.UI.Views
                 ZooMessageBox.Show("Bitte Name und Tierart angeben.", "Eingabefehler");
                 return;
             }
+            
+            System.DateTime date = NewAnimalFeedingDate.SelectedDate ?? System.DateTime.Now;
+            int hour = int.Parse(FeedingHourSelector.SelectedItem?.ToString() ?? "0");
+            int minute = int.Parse(FeedingMinuteSelector.SelectedItem?.ToString() ?? "0");
+            System.DateTime combinedFeedingTime = new System.DateTime(date.Year, date.Month, date.Day, hour, minute, 0);
 
             var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
             var newAnimal = new Core.Models.Animal
             {
                 Name = NewAnimalName.Text,
                 SpeciesId = ((Core.Models.Species)SpeciesSelector.SelectedItem).Id,
-                EnclosureId = EnclosureSelector.SelectedItem != null ? ((Core.Models.Enclosure)EnclosureSelector.SelectedItem).Id : 0
+                EnclosureId = EnclosureSelector.SelectedItem != null ? ((Core.Models.Enclosure)EnclosureSelector.SelectedItem).Id : 0,
+                NextFeedingTime = combinedFeedingTime
             };
             
             db.SaveAnimals(new List<Core.Models.Animal> { newAnimal });
@@ -113,21 +128,19 @@ namespace ZooManager.UI.Views
 
                 var newEvent = new Core.Models.AnimalEvent
                 {
-                    Date = NewEventDate.SelectedDate.Value, // Datum vom Kalender nehmen
+                    Date = NewEventDate.SelectedDate.Value,
                     Type = NewEventType.Text,
                     Description = NewEventDesc.Text
                 };
 
                 var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
                 db.AddAnimalEvent(selectedAnimal.Id, newEvent);
-
-                // UI aktualisieren (Nach Datum sortiert einfügen)
+                
                 selectedAnimal.Events.Add(newEvent);
                 var sortedEvents = selectedAnimal.Events.OrderByDescending(x => x.Date).ToList();
                 selectedAnimal.Events = sortedEvents;
                 EventsList.ItemsSource = sortedEvents;
 
-                // Felder zurücksetzen
                 NewEventType.Text = "";
                 NewEventDesc.Text = "";
                 NewEventDate.SelectedDate = System.DateTime.Now;

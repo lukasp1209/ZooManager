@@ -55,11 +55,13 @@
 
                     <Label Content="Benötigtes Klima (ANF2):"/>
                     <ComboBox x:Name="NewSpeciesClimate" Margin="0,0,0,12" Padding="8">
-                            <ComboBoxItem Content="Tropical"/>
-                            <ComboBoxItem Content="Arid"/>
-                            <ComboBoxItem Content="Polar"/>
-                            <ComboBoxItem Content="Temperate"/>
-                        </ComboBox>
+                        <ComboBoxItem Content="Tropisch"/>
+                        <ComboBoxItem Content="Trocken"/>
+                        <ComboBoxItem Content="Polar"/>
+                        <ComboBoxItem Content="Gemäßigt"/>
+                    </ComboBox>
+                    
+                    <CheckBox x:Name="NewSpeciesNeedsWater" Content="Benötigt Wasserzugang (Schwimmbereich)" Margin="0,0,0,12" FontWeight="SemiBold"/>
 
                     <Label Content="Min. Platz pro Tier (qm):"/>
                     <TextBox x:Name="NewSpeciesSpace" Margin="0,0,0,20" Padding="8"/>

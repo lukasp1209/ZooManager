@@ -3,12 +3,43 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
+             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="900">
     <StackPanel Margin="24">
-        <TextBlock Text="Settings" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextMainBrush}"/>
-        <Border Style="{StaticResource Card}" Margin="0,24,0,0">
-            <TextBlock Text="System-Einstellungen." Foreground="{StaticResource TextMutedBrush}"/>
+        <TextBlock Text="System-Einstellungen" FontSize="26" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <!-- Aktuelles Profil -->
+        <Border Style="{StaticResource Card}">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Width="60" Height="60" Fill="{StaticResource PrimaryBrush}"/>
+                <StackPanel Margin="20,0,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="CurrentUserNameDisplay" Text="Admin" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock x:Name="CurrentUserRoleDisplay" Text="Administrator" Foreground="{StaticResource TextMutedBrush}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Rollen-Simulator (Login) -->
+        <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+            <StackPanel>
+                <TextBlock Text="Benutzer wechseln (Simulierter Login)" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                <TextBlock Text="Wählen Sie eine Identität, um die Berechtigungen zu testen:" FontSize="13" Margin="0,0,0,12" Foreground="{StaticResource TextMutedBrush}"/>
+                
+                <UniformGrid Columns="3">
+                    <Button Content="Login als Admin" Margin="5" Padding="10" Click="Login_Click" Tag="Admin"/>
+                    <Button Content="Login als ZooManager" Margin="5" Padding="10" Click="Login_Click" Tag="ZooManager"/>
+                    <Button Content="Login als Mitarbeiter" Margin="5" Padding="10" Click="Login_Click" Tag="Employee"/>
+                </UniformGrid>
+            </StackPanel>
+        </Border>
+
+        <!-- Datenbank Einstellungen -->
+        <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+            <StackPanel>
+                <TextBlock Text="Datenbank-Konfiguration" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                <Label Content="MySQL Server Address:"/>
+                <TextBox Text="localhost" Margin="0,0,0,12" Padding="5" IsReadOnly="True" Background="#F9F9F9"/>
+                <Button Content="Verbindung testen" HorizontalAlignment="Left" Padding="15,5" Background="{StaticResource PrimaryBrush}" Foreground="White"/>
+            </StackPanel>
         </Border>
     </StackPanel>
 </UserControl>
