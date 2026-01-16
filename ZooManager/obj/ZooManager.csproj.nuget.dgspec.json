@@ -52,9 +52,9 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
-            "System.Data.SqlClient": {
+            "MySql.Data": {
               "target": "Package",
-              "version": "[4.9.0, )"
+              "version": "[9.5.0, )"
             }
           },
           "imports": [
