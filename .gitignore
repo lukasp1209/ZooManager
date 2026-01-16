@@ -1,0 +1,34 @@
+﻿## Visual Studio / MSBuild / .NET
+bin/
+obj/
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## Veröffentlichte Dateien (Publish)
+publish/
+*.publishsettings
+
+## NuGet
+# Falls du NuGet-Pakete direkt im Projektordner speicherst (selten bei .NET Core/8)
+packages/
+*.nupkg
+
+## MySQL / Datenbank-Logs (falls lokal vorhanden)
+*.log
+*.sql.user
+
+## Betriebssystem-Dateien
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+## Sonstiges
+*.cache
+*.bak
+*.tmp
