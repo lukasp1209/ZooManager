@@ -35,8 +35,6 @@ namespace ZooManager.UI.ViewModels
 
         private void DeleteSpecies(object obj)
         {
-            if (SelectedSpecies == null) return;
-            
             if (_repository.HasAnimalsForSpecies(SelectedSpecies.Id))
             {
                 return;
@@ -46,6 +44,6 @@ namespace ZooManager.UI.ViewModels
             LoadData();
         }
 
-        private bool CanDeleteSpecies(object obj) => SelectedSpecies != null;
+        private bool CanDeleteSpecies(object obj) => true;
     }
 }

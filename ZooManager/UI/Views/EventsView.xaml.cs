@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using ZooManager.Core.Models;
 using ZooManager.Infrastructure.Persistence;
@@ -53,7 +51,7 @@ namespace ZooManager.UI.Views
             MinuteSelector.SelectedIndex = 0;
         }
 
-        private void CancelEventEditor_Click(object sender, RoutedEventArgs e)
+        private void CancelEventEditor_Click(object? sender, RoutedEventArgs? e)
         {
             EventEditorArea.Visibility = Visibility.Collapsed;
             EventDetailsArea.Visibility = Visibility.Visible;

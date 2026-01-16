@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ZooManager.UI.ViewModels
+﻿namespace ZooManager.UI.ViewModels
 {
     public class AnimalRecordViewModel : ViewModelBase
     {
@@ -45,25 +43,6 @@ namespace ZooManager.UI.ViewModels
         {
             get => _status;
             set { _status = value; OnPropertyChanged(); }
-        }
-
-        public RelayCommand SaveCommand { get; }
-        public RelayCommand CancelCommand { get; }
-
-        public AnimalRecordViewModel()
-        {
-            SaveCommand = new RelayCommand(_ => Save());
-            CancelCommand = new RelayCommand(_ => Cancel());
-        }
-
-        private void Save()
-        {
-            // TODO: Persist animal
-        }
-
-        private void Cancel()
-        {
-            // TODO: Close record / navigate back
         }
     }
 }

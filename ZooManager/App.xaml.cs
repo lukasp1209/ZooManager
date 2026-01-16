@@ -1,6 +1,4 @@
 ﻿using System.Windows;
-using ZooManager.UI.ViewModels;
-using ZooManager.UI.Views;
 
 namespace ZooManager
 {

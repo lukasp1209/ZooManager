@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ZooManager.Core.Models
+﻿namespace ZooManager.Core.Models
 {
     public class Employee
     {

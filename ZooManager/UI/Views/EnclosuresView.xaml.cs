@@ -4,8 +4,6 @@ using ZooManager.Core.Models;
 using ZooManager.Core.Services;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ZooManager.UI.Views
 {

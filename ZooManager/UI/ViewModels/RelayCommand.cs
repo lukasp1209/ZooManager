@@ -3,8 +3,8 @@
 namespace ZooManager.UI.ViewModels;
 
 public class RelayCommand(
-    Action<object?> execute,
-    Func<object?, bool>? canExecute = null)
+    Action<object> execute,
+    Func<object, bool> canExecute = null)
     : ICommand
 {
     public bool CanExecute(object? parameter)
