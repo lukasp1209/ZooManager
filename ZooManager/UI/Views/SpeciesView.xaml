@@ -18,7 +18,18 @@
                     <Button Content="+ Neue Art" Padding="8" Click="AddSpecies_Click" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"/>
                     <Button Content="Art löschen" Padding="8" Margin="0,8,0,0" Click="DeleteSpecies_Click" Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"/>
                 </StackPanel>
-                <ListBox x:Name="SpeciesList" BorderThickness="0" DisplayMemberPath="Name" SelectionChanged="SpeciesList_SelectionChanged"/>
+                <ListBox x:Name="SpeciesList" 
+                         BorderThickness="0" 
+                         SelectionChanged="SpeciesList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,4">
+                                <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding RequiredClimate}" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
             </DockPanel>
         </Border>
 

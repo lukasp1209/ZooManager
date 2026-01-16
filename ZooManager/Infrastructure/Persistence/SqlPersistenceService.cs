@@ -61,25 +61,27 @@ namespace ZooManager.Infrastructure.Persistence
                 
                 // JOIN hinzugefügt, um den Namen der Art zu erhalten
                 var cmd = new MySqlCommand(
-                    @"SELECT a.*, s.Name as SpeciesName 
-                          FROM Animals a 
-                          JOIN Species s ON a.SpeciesId = s.Id", connection);
+                    @"
+                SELECT a.*, s.Name AS SpeciesName, e.Name AS EnclosureName 
+                FROM Animals a 
+                LEFT JOIN Species s ON a.SpeciesId = s.Id 
+                LEFT JOIN Enclosures e ON a.EnclosureId = e.Id", connection);
                 
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        animals.Add(new Animal
+                        var animal = new Animal
                         {
-                            Id = reader.GetInt32("Id"),
-                            Name = reader.GetString("Name"),
-                            SpeciesId = reader.GetInt32("SpeciesId"),
-                            SpeciesName = reader.GetString("SpeciesName"),
-                            EnclosureId = reader.GetInt32("EnclosureId"),
-                            NextFeedingTime = reader.IsDBNull(reader.GetOrdinal("NextFeedingTime")) 
-                                ? DateTime.Now 
-                                : reader.GetDateTime("NextFeedingTime")
-                        });
+                            Id = Convert.ToInt32(reader["Id"]),
+                            Name = reader["Name"].ToString(),
+                            SpeciesId = Convert.ToInt32(reader["SpeciesId"]),
+                            SpeciesName = reader["SpeciesName"] != DBNull.Value ? reader["SpeciesName"].ToString() : "Unbekannte Art",
+                            EnclosureId = reader["EnclosureId"] != DBNull.Value ? Convert.ToInt32(reader["EnclosureId"]) : null,
+                            EnclosureName = reader["EnclosureName"] != DBNull.Value ? reader["EnclosureName"].ToString() : "Kein Gehege",
+                            NextFeedingTime = Convert.ToDateTime(reader["NextFeedingTime"])
+                        };
+                        animals.Add(animal);
                     }
                 }
 

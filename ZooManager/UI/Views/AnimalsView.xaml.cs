@@ -3,6 +3,7 @@ using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
 using System.Linq;
 using System.Windows;
+using ZooManager.Core.Models;
 
 namespace ZooManager.UI.Views
 {
@@ -35,21 +36,13 @@ namespace ZooManager.UI.Views
 
         private void AnimalsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (AnimalsList.SelectedItem is Core.Models.Animal selectedAnimal)
+            if (AnimalsList.SelectedItem is Animal selectedAnimal)
             {
                 SelectedAnimalName.Text = selectedAnimal.Name;
                 SelectedAnimalSpecies.Text = selectedAnimal.SpeciesName;
                 SelectedAnimalNameDetail.Text = selectedAnimal.Name;
-                SelectedAnimalEnclosure.Text = $"ID: {selectedAnimal.EnclosureId}";
-                
-                SelectedAnimalFeeding.Text = selectedAnimal.NextFeedingTime.ToString("dd.MM.yyyy HH:mm") + " Uhr";
-                
-                EventsList.ItemsSource = selectedAnimal.Events;
-                
-                DynamicAttributesList.ItemsSource = selectedAnimal.Attributes.ToList();
-                
-                DetailsArea.Visibility = Visibility.Visible;
-                EditorArea.Visibility = Visibility.Collapsed;
+                SelectedAnimalEnclosure.Text = selectedAnimal.EnclosureName;
+                SelectedAnimalFeeding.Text = selectedAnimal.NextFeedingTime.ToString("g");
             }
         }
 

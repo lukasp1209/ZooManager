@@ -1,4 +1,6 @@
-﻿namespace ZooManager.UI.ViewModels
+﻿using System;
+
+namespace ZooManager.UI.ViewModels
 {
     public class AnimalRecordViewModel : ViewModelBase
     {

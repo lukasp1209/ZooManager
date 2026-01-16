@@ -1,4 +1,6 @@
-﻿namespace ZooManager.Core.Models;
+﻿using System;
+
+namespace ZooManager.Core.Models;
 
 public class ZooEvent
 {

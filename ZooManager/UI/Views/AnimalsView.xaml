@@ -58,7 +58,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/> <!-- Neu für Fütterung -->
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 
                                 <TextBlock Text="Name:" FontWeight="SemiBold" Margin="0,4,12,4"/>

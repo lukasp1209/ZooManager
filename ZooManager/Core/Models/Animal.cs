@@ -8,8 +8,9 @@ namespace ZooManager.Core.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public int SpeciesId { get; set; }
-        public string SpeciesName { get; set; } // Neu: Für die Anzeige der Art
-        public int EnclosureId { get; set; }
+        public string SpeciesName { get; set; }
+        public int? EnclosureId { get; set; }
+        public string EnclosureName { get; set; }
         public Dictionary<string, object> Attributes { get; set; } = new Dictionary<string, object>();
         public List<AnimalEvent> Events { get; set; } = new List<AnimalEvent>();
         public System.DateTime NextFeedingTime { get; set; } 

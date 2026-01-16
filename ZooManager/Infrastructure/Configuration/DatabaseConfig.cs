@@ -18,7 +18,7 @@ namespace ZooManager.Infrastructure.Configuration
             }
 
             // Fallback für die lokale Entwicklung
-            return "Server=localhost;Database=ZooManagerDB;Uid=root;Pwd=DEIN_PASSWORT;";
+            return "Server=localhost;Database=ZooManagerDB;Uid=root;Pwd=password;";
         }
     }
 }
