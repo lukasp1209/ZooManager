@@ -16,29 +16,28 @@
             <StackPanel>
                 <TextBlock Text="Berichte &amp; Statistik" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
                 <ListBox x:Name="ReportTypeList" BorderThickness="0" SelectionChanged="ReportTypeList_SelectionChanged">
-                    <ListBoxItem Content="Bestand nach Tierart" Padding="10"/>
-                    <ListBoxItem Content="Gehege-Auslastung" Padding="10"/>
-                    <ListBoxItem Content="Personal-Qualifikationen" Padding="10"/>
+                    <ListBoxItem Padding="0,4">
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="Bestand nach Tierart" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="Übersicht der Tierpopulation" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    
+                    <ListBoxItem Padding="0,4">
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="Gehege-Auslastung" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="Kapazitätsanalyse der Anlagen" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    
+                    <ListBoxItem Padding="0,4">
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="Personal-Qualifikationen" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="Verfügbarkeit von Fachexperten" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                        </StackPanel>
+                    </ListBoxItem>
                 </ListBox>
             </StackPanel>
-        </Border>
-
-        <!-- Rechte Seite: Berichtsanzeige -->
-        <Border Grid.Column="1" Style="{StaticResource Card}">
-            <DockPanel>
-                <TextBlock Text="Bitte wählen Sie einen Bericht" DockPanel.Dock="Top" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
-                
-                <DataGrid 
-                          AutoGenerateColumns="True" 
-                          IsReadOnly="True" 
-                          Background="White" 
-                          BorderThickness="1" 
-                          BorderBrush="#EEE"
-                          GridLinesVisibility="Horizontal"
-                          HeadersVisibility="Column"
-                          AlternatingRowBackground="#F9F9F9">
-                </DataGrid>
-            </DockPanel>
         </Border>
 
         <!-- Rechte Seite: Analyse-Zentrum -->
@@ -49,8 +48,8 @@
                     <RowDefinition Height="200"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                
-                <TextBlock x:Name="ReportTitle" Text="Analyse-Dashboard" Grid.Row="0" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+            
+                <TextBlock x:Name="ReportTitle" Text="Wählen Sie einen Bericht" Grid.Row="0" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
 
                 <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="8" Padding="16" Margin="0,0,0,20">
                     <DockPanel>

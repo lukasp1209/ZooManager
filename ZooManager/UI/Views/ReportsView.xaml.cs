@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 using ZooManager.Core.Models;
@@ -21,7 +22,13 @@ namespace ZooManager.UI.Views
         {
             if (ReportTypeList.SelectedItem is ListBoxItem selectedItem)
             {
-                string reportName = selectedItem.Content.ToString();
+                // Da wir jetzt ein StackPanel mit TextBlocks haben, müssen wir den ersten TextBlock finden
+                var stackPanel = selectedItem.Content as StackPanel;
+                var firstTextBlock = stackPanel?.Children.OfType<TextBlock>().FirstOrDefault();
+                string reportName = firstTextBlock?.Text;
+                    
+                if (string.IsNullOrEmpty(reportName)) return;
+
                 ReportTitle.Text = reportName;
 
                 switch (reportName)

@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Collections.Generic;
+using System.Windows.Controls;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
 using System.Linq;

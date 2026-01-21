@@ -1,4 +1,6 @@
-﻿using MySql.Data.MySqlClient;
+﻿using System;
+using System.Collections.Generic;
+using MySql.Data.MySqlClient;
 using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 
