@@ -9,8 +9,9 @@ namespace ZooManager.UI.Views
     public partial class DashboardView : UserControl
     {
         private readonly IPersistenceService _db;
+        private readonly IAuthenticationService  authService;
         
-        public DashboardView(IPersistenceService persistenceService = null)
+        public DashboardView(IPersistenceService persistenceService,  IAuthenticationService authService)
         {
             InitializeComponent(); 
             
@@ -61,7 +62,7 @@ namespace ZooManager.UI.Views
             var mainWindow = System.Windows.Window.GetWindow(this) as MainWindow;
             if (mainWindow != null)
             {
-                mainWindow.MainContentPresenter.Content = new EventsView();
+                mainWindow.MainContentPresenter.Content = new EventsView(persistenceService: new SqlitePersistenceService(), authService);
             }
         }
     }

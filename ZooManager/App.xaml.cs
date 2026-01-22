@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Core.Interfaces;
+using ZooManager.Infrastructure.Authentication;
 using ZooManager.UI.Views;
 
 namespace ZooManager
@@ -12,9 +13,10 @@ namespace ZooManager
             base.OnStartup(e);
             
             IPersistenceService persistenceService = new SqlitePersistenceService("zoo.db");
+            IAuthenticationService authService = new AuthenticationService(persistenceService);
             
-            var mainWindow = new MainWindow(persistenceService);
-            mainWindow.Show();
+            var loginWindow = new LoginWindow(authService, persistenceService);
+            loginWindow.Show();
         }
     }
 }

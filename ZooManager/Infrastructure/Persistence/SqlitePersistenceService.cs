@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using Microsoft.Data.Sqlite;
 using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
@@ -21,85 +22,204 @@ namespace ZooManager.Infrastructure.Persistence
         }
 
         private void InitializeDatabase()
+{
+    using (var connection = new SqliteConnection(_connectionString))
+    {
+        connection.Open();
+        
+        var pragmaCmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection);
+        pragmaCmd.ExecuteNonQuery();
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = @"
+            CREATE TABLE IF NOT EXISTS Species (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, RequiredClimate TEXT, NeedsWater INTEGER, MinSpacePerAnimal REAL);
+            CREATE TABLE IF NOT EXISTS Enclosures (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, ClimateType TEXT, HasWaterAccess INTEGER, TotalArea REAL, MaxCapacity INTEGER);
+            CREATE TABLE IF NOT EXISTS Animals (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, SpeciesId INTEGER, EnclosureId INTEGER, NextFeedingTime TEXT);
+            CREATE TABLE IF NOT EXISTS AnimalEvents (
+                AnimalId INTEGER,
+                EventDate TEXT,
+                EventType TEXT,
+                Description TEXT,
+                FOREIGN KEY(AnimalId) REFERENCES Animals(Id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS Employees (Id INTEGER PRIMARY KEY AUTOINCREMENT, FirstName TEXT, LastName TEXT);
+            CREATE TABLE IF NOT EXISTS EmployeeQualifications (
+                EmployeeId INTEGER,
+                SpeciesId INTEGER,
+                PRIMARY KEY (EmployeeId, SpeciesId),
+                FOREIGN KEY(EmployeeId) REFERENCES Employees(Id) ON DELETE CASCADE,
+                FOREIGN KEY(SpeciesId) REFERENCES Species(Id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS ZooEvents (Id INTEGER PRIMARY KEY AUTOINCREMENT, Title TEXT, Description TEXT, Start TEXT);
+            CREATE TABLE IF NOT EXISTS SpeciesFieldDefinitions (Id INTEGER PRIMARY KEY AUTOINCREMENT, SpeciesId INTEGER, FieldName TEXT);
+            CREATE TABLE IF NOT EXISTS AnimalAttributes (AnimalId INTEGER, FieldDefinitionId INTEGER, ValueText TEXT, PRIMARY KEY(AnimalId, FieldDefinitionId));
+            CREATE TABLE IF NOT EXISTS Users (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Username TEXT UNIQUE NOT NULL,
+                PasswordHash TEXT NOT NULL,
+                Role INTEGER NOT NULL,
+                EmployeeId INTEGER,
+                CreatedAt TEXT NOT NULL,
+                IsActive INTEGER DEFAULT 1,
+                FOREIGN KEY(EmployeeId) REFERENCES Employees(Id) ON DELETE SET NULL
+            );
+        ";
+        cmd.ExecuteNonQuery();
+
+        // Testdaten nur einfügen, wenn die Tabellen noch leer sind
+        var checkCmd = new SqliteCommand("SELECT COUNT(*) FROM Species", connection);
+        long count = (long)checkCmd.ExecuteScalar();
+
+        if (count == 0)
+        {
+            // Temporarily disable foreign keys for test data insertion
+            var disableFkCmd = new SqliteCommand("PRAGMA foreign_keys = OFF;", connection);
+            disableFkCmd.ExecuteNonQuery();
+
+            var insertCmd = connection.CreateCommand();
+            insertCmd.CommandText = @"
+                INSERT INTO Species (Name, RequiredClimate, NeedsWater, MinSpacePerAnimal) VALUES ('Löwe', 'Trocken', 0, 50.0);
+                INSERT INTO Species (Name, RequiredClimate, NeedsWater, MinSpacePerAnimal) VALUES ('Pinguin', 'Polar', 1, 10.0);
+
+                INSERT INTO Enclosures (Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) VALUES ('Savanne A1', 'Trocken', 1, 500.0, 5);
+                INSERT INTO Enclosures (Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) VALUES ('Eishalle', 'Polar', 1, 200.0, 20);
+
+                INSERT INTO Animals (Name, SpeciesId, EnclosureId, NextFeedingTime) VALUES ('Simba', 1, 1, datetime('now'));
+                INSERT INTO Animals (Name, SpeciesId, EnclosureId, NextFeedingTime) VALUES ('Pingu', 2, 2, datetime('now'));
+
+                INSERT INTO Employees (FirstName, LastName) VALUES ('Max', 'Mustermann');
+                INSERT INTO Employees (FirstName, LastName) VALUES ('Anna', 'Schmidt');
+                INSERT INTO EmployeeQualifications (EmployeeId, SpeciesId) VALUES (1, 1);
+                INSERT INTO EmployeeQualifications (EmployeeId, SpeciesId) VALUES (2, 2);
+            ";
+            insertCmd.ExecuteNonQuery();
+            
+            // KORREKTER Hash für "password" mit Salt "ZooManagerSalt"
+            string correctPasswordHash = GeneratePasswordHash("password");
+            
+            var userCmd = connection.CreateCommand();
+            userCmd.CommandText = @"
+                INSERT INTO Users (Username, PasswordHash, Role, EmployeeId, CreatedAt, IsActive) 
+                VALUES (@username1, @hash, 1, NULL, datetime('now'), 1);
+                INSERT INTO Users (Username, PasswordHash, Role, EmployeeId, CreatedAt, IsActive) 
+                VALUES (@username2, @hash, 2, 1, datetime('now'), 1);
+                INSERT INTO Users (Username, PasswordHash, Role, EmployeeId, CreatedAt, IsActive) 
+                VALUES (@username3, @hash, 2, 2, datetime('now'), 1);
+            ";
+            userCmd.Parameters.AddWithValue("@username1", "manager");
+            userCmd.Parameters.AddWithValue("@username2", "max.mustermann");
+            userCmd.Parameters.AddWithValue("@username3", "anna.schmidt");
+            userCmd.Parameters.AddWithValue("@hash", correctPasswordHash);
+            userCmd.ExecuteNonQuery();
+            
+            var enableFkCmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection);
+            enableFkCmd.ExecuteNonQuery();
+        }
+    }
+}
+        
+private string GeneratePasswordHash(string password)
+{
+    using (var sha256 = System.Security.Cryptography.SHA256.Create())
+    {
+        var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password + "ZooManagerSalt"));
+        return Convert.ToBase64String(hashedBytes);
+    }
+}
+
+        public User? GetUserByUsername(string username)
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
-
-                var pragmaCmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection);
-                pragmaCmd.ExecuteNonQuery();
-
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
-        CREATE TABLE IF NOT EXISTS Species (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, RequiredClimate TEXT, NeedsWater INTEGER, MinSpacePerAnimal REAL);
-        CREATE TABLE IF NOT EXISTS Enclosures (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, ClimateType TEXT, HasWaterAccess INTEGER, TotalArea REAL, MaxCapacity INTEGER);
-        CREATE TABLE IF NOT EXISTS Animals (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, SpeciesId INTEGER, EnclosureId INTEGER, NextFeedingTime TEXT);
-        CREATE TABLE IF NOT EXISTS AnimalEvents (
-            AnimalId INTEGER,
-            EventDate TEXT,
-            EventType TEXT,
-            Description TEXT,
-            FOREIGN KEY(AnimalId) REFERENCES Animals(Id) ON DELETE CASCADE
-        );
-        CREATE TABLE IF NOT EXISTS Employees (Id INTEGER PRIMARY KEY AUTOINCREMENT, FirstName TEXT, LastName TEXT);
-        CREATE TABLE IF NOT EXISTS EmployeeQualifications (
-            EmployeeId INTEGER,
-            SpeciesId INTEGER,
-            PRIMARY KEY (EmployeeId, SpeciesId),
-            FOREIGN KEY(EmployeeId) REFERENCES Employees(Id) ON DELETE CASCADE,
-            FOREIGN KEY(SpeciesId) REFERENCES Species(Id) ON DELETE CASCADE
-        );
-        CREATE TABLE IF NOT EXISTS ZooEvents (Id INTEGER PRIMARY KEY AUTOINCREMENT, Title TEXT, Description TEXT, Start TEXT);
-        CREATE TABLE IF NOT EXISTS SpeciesFieldDefinitions (Id INTEGER PRIMARY KEY AUTOINCREMENT, SpeciesId INTEGER, FieldName TEXT);
-        CREATE TABLE IF NOT EXISTS AnimalAttributes (AnimalId INTEGER, FieldDefinitionId INTEGER, ValueText TEXT, PRIMARY KEY(AnimalId, FieldDefinitionId));
-    ";
-                cmd.ExecuteNonQuery();
+                var cmd = new SqliteCommand("SELECT Id, Username, PasswordHash, Role, EmployeeId, CreatedAt, IsActive FROM Users WHERE Username = @username", connection);
+                cmd.Parameters.AddWithValue("@username", username);
                 
-                var checkCmd = new SqliteCommand("SELECT COUNT(*) FROM Species", connection);
-                long count = (long)checkCmd.ExecuteScalar();
-
-                if (count == 0)
+                using (var reader = cmd.ExecuteReader())
                 {
-                    var insertCmd = connection.CreateCommand();
-                    insertCmd.CommandText = @"
-                        INSERT INTO Species (Name, RequiredClimate, NeedsWater, MinSpacePerAnimal) VALUES ('Löwe', 'Trocken', 0, 50.0);
-                        INSERT INTO Species (Name, RequiredClimate, NeedsWater, MinSpacePerAnimal) VALUES ('Pinguin', 'Polar', 1, 10.0);
-
-                        INSERT INTO Enclosures (Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) VALUES ('Savanne A1', 'Trocken', 1, 500.0, 5);
-                        INSERT INTO Enclosures (Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) VALUES ('Eishalle', 'Polar', 1, 200.0, 20);
-                    ";
-                    insertCmd.ExecuteNonQuery();
-                    
-                    var speciesCmd = new SqliteCommand("SELECT Id FROM Species ORDER BY Id LIMIT 2", connection);
-                    var enclosureCmd = new SqliteCommand("SELECT Id FROM Enclosures ORDER BY Id LIMIT 2", connection);
-                    
-                    var speciesIds = new List<int>();
-                    var enclosureIds = new List<int>();
-                    
-                    using (var reader = speciesCmd.ExecuteReader())
+                    if (reader.Read())
                     {
-                        while (reader.Read()) speciesIds.Add(reader.GetInt32(0));
+                        return new User
+                        {
+                            Id = reader.GetInt32("Id"),
+                            Username = reader.GetString("Username"),
+                            PasswordHash = reader.GetString("PasswordHash"),
+                            Role = (UserRole)reader.GetInt32("Role"),
+                            EmployeeId = reader.IsDBNull("EmployeeId") ? null : reader.GetInt32("EmployeeId"),
+                            CreatedAt = DateTime.Parse(reader.GetString("CreatedAt")),
+                            IsActive = reader.GetInt32("IsActive") == 1
+                        };
                     }
-                    
-                    using (var reader = enclosureCmd.ExecuteReader())
+                }
+            }
+            return null;
+        }
+
+        public User? GetUserById(int userId)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                var cmd = new SqliteCommand("SELECT Id, Username, PasswordHash, Role, EmployeeId, CreatedAt, IsActive FROM Users WHERE Id = @id", connection);
+                cmd.Parameters.AddWithValue("@id", userId);
+                
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
                     {
-                        while (reader.Read()) enclosureIds.Add(reader.GetInt32(0));
+                        return new User
+                        {
+                            Id = reader.GetInt32("Id"),
+                            Username = reader.GetString("Username"),
+                            PasswordHash = reader.GetString("PasswordHash"),
+                            Role = (UserRole)reader.GetInt32("Role"),
+                            EmployeeId = reader.IsDBNull("EmployeeId") ? null : reader.GetInt32("EmployeeId"),
+                            CreatedAt = DateTime.Parse(reader.GetString("CreatedAt")),
+                            IsActive = reader.GetInt32("IsActive") == 1
+                        };
                     }
-                    
-                    var animalCmd = connection.CreateCommand();
-                    animalCmd.CommandText = $@"
-                        INSERT INTO Animals (Name, SpeciesId, EnclosureId, NextFeedingTime) VALUES ('Simba', {speciesIds[0]}, {enclosureIds[0]}, datetime('now'));
-                        INSERT INTO Animals (Name, SpeciesId, EnclosureId, NextFeedingTime) VALUES ('Pingu', {speciesIds[1]}, {enclosureIds[1]}, datetime('now'));
+                }
+            }
+            return null;
+        }
 
-                        INSERT INTO Employees (FirstName, LastName) VALUES ('Max', 'Mustermann');
-                    ";
-                    animalCmd.ExecuteNonQuery();
+        public bool SaveUser(User user)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                SqliteCommand cmd;
+                
+                if (user.Id <= 0) 
+                {
+                    cmd = new SqliteCommand(@"
+                        INSERT INTO Users (Username, PasswordHash, Role, EmployeeId, CreatedAt, IsActive) 
+                        VALUES (@username, @hash, @role, @empId, @created, @active)", connection);
+                    cmd.Parameters.AddWithValue("@created", user.CreatedAt.ToString("o"));
+                }
+                else 
+                {
+                    cmd = new SqliteCommand(@"
+                        UPDATE Users 
+                        SET Username = @username, PasswordHash = @hash, Role = @role, EmployeeId = @empId, IsActive = @active 
+                        WHERE Id = @id", connection);
+                    cmd.Parameters.AddWithValue("@id", user.Id);
+                }
+                
+                cmd.Parameters.AddWithValue("@username", user.Username);
+                cmd.Parameters.AddWithValue("@hash", user.PasswordHash);
+                cmd.Parameters.AddWithValue("@role", (int)user.Role);
+                cmd.Parameters.AddWithValue("@empId", (object)user.EmployeeId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@active", user.IsActive ? 1 : 0);
 
-                    var empCmd = new SqliteCommand("SELECT Id FROM Employees ORDER BY Id LIMIT 1", connection);
-                    var employeeId = (int)(long)empCmd.ExecuteScalar();
-                    
-                    var qualCmd = new SqliteCommand($"INSERT INTO EmployeeQualifications (EmployeeId, SpeciesId) VALUES ({employeeId}, {speciesIds[0]})", connection);
-                    qualCmd.ExecuteNonQuery();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+                catch
+                {
+                    return false;
                 }
             }
         }
@@ -151,6 +271,41 @@ namespace ZooManager.Infrastructure.Persistence
                     using (var r = attrCmd.ExecuteReader())
                     {
                         while (r.Read()) animal.Attributes[r.GetString(0)] = r.GetString(1);
+                    }
+                }
+            }
+            return animals;
+        }
+        
+        public IEnumerable<Animal> LoadAnimalsForEmployee(int employeeId)
+        {
+            var animals = new List<Animal>();
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                var cmd = new SqliteCommand(@"
+                    SELECT DISTINCT a.*, s.Name AS SpeciesName, e.Name AS EnclosureName 
+                    FROM Animals a 
+                    LEFT JOIN Species s ON a.SpeciesId = s.Id 
+                    LEFT JOIN Enclosures enc ON a.EnclosureId = enc.Id
+                    JOIN EmployeeQualifications eq ON s.Id = eq.SpeciesId
+                    WHERE eq.EmployeeId = @empId", connection);
+                
+                cmd.Parameters.AddWithValue("@empId", employeeId);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        animals.Add(new Animal {
+                            Id = reader.GetInt32(0),
+                            Name = reader.GetString(1),
+                            SpeciesId = reader.GetInt32(2),
+                            EnclosureId = reader.IsDBNull(3) ? null : reader.GetInt32(3),
+                            NextFeedingTime = DateTime.Parse(reader.GetString(4)),
+                            SpeciesName = reader.IsDBNull(5) ? "Unbekannt" : reader.GetString(5),
+                            EnclosureName = reader.IsDBNull(6) ? "Kein Gehege" : reader.GetString(6)
+                        });
                     }
                 }
             }

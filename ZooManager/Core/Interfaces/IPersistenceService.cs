@@ -19,6 +19,10 @@ namespace ZooManager.Core.Interfaces
 
         IEnumerable<ZooEvent> LoadEvents();
         void SaveEvents(IEnumerable<ZooEvent> events);
+        
+        User? GetUserByUsername(string username);
+        User? GetUserById(int id);
+        bool SaveUser(User user);
     }
 
     public interface IValidationService

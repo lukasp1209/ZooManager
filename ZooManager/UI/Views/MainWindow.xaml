@@ -31,7 +31,66 @@
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
-                    </StackPanel>
+                    
+                    <!-- User Info -->
+                    <Border Background="#000000" 
+                            CornerRadius="6" 
+                            Padding="16,8"
+                            Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="👤" 
+                                       FontSize="18" 
+                                       Margin="0,0,8,0"
+                                       VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock x:Name="UsernameText"
+                                           Text="Benutzername"
+                                           FontWeight="SemiBold"
+                                           FontSize="14"
+                                           Foreground="White"/>
+                                <TextBlock x:Name="UserRoleText"
+                                           Text="Rolle"
+                                           FontSize="11"
+                                           Foreground="#FFFFFFCC"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Logout Button -->
+                    <Button x:Name="LogoutButton"
+                            Content="Abmelden"
+                            Height="36"
+                            Padding="16,0"
+                            Background="#000000"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Cursor="Hand"
+                            Click="LogoutButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6" 
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#FFFFFF30"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -58,18 +117,16 @@
                     <Button Content="Mitarbeiter" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Employees"/>
                     <Button Content="Fütterung" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="FeedingPlan"/>
                     
-                        
+                    <Separator Margin="0,16"/>
+                    <Button Content="Events" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Events"/>  
+                    <Button Content="Statistik" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Reports"/>
+                </StackPanel>
+            </Border>
 
-                        <Separator Margin="0,16"/>
-                        <Button Content="Events" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Events"/>  
-                        <Button Content="Statistik" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Reports"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- CONTENT -->
-                <ScrollViewer Grid.Column="1">
-                    <ContentControl x:Name="MainContentPresenter" Margin="0"/>
-                </ScrollViewer>
-            </Grid>
+            <!-- CONTENT -->
+            <ScrollViewer Grid.Column="1">
+                <ContentControl x:Name="MainContentPresenter" Margin="0"/>
+            </ScrollViewer>
         </Grid>
-    </Window>
+    </Grid>
+</Window>

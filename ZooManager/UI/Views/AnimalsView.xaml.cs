@@ -12,8 +12,9 @@ namespace ZooManager.UI.Views
     public partial class AnimalsView : UserControl
     {
         private SqlitePersistenceService _db;
+        private readonly IAuthenticationService  authService;
 
-        public AnimalsView(IPersistenceService persistenceService = null)
+        public AnimalsView(IPersistenceService persistenceService,  IAuthenticationService authService)
         {
             InitializeComponent();
             _db = persistenceService as SqlitePersistenceService ?? 
