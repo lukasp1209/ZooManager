@@ -15,6 +15,7 @@ namespace ZooManager.Core.Models
 
     public enum UserRole
     {
+        Admin = 0,
         ZooManager = 1,
         Employee = 2
     }

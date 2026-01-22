@@ -14,8 +14,10 @@ namespace ZooManager.UI.Views
         private List<Employee> _employees;
         private List<Species> _allSpecies;
         private SqlitePersistenceService _db;
+        private IPersistenceService _persistenceService;
+        private IAuthenticationService _authService;
 
-        public EmployeesView(IPersistenceService persistenceService = null)
+        public EmployeesView(IPersistenceService persistenceService, IAuthenticationService _authService)
         {
             InitializeComponent();
             _db = persistenceService as SqlitePersistenceService ?? 
@@ -64,22 +66,58 @@ namespace ZooManager.UI.Views
             EmployeeDetailsArea.Visibility = Visibility.Visible;
         }
 
-        private void SaveNewEmployee_Click(object sender, RoutedEventArgs e)
+       private void SaveNewEmployee_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(NewEmpLastName.Text)) return;
+            var role = _authService.GetCurrentUser()?.Role;
+            if (role == UserRole.Employee)
+            {
+                ZooMessageBox.Show("Sie haben keine Berechtigung, Mitarbeiter anzulegen.", "Zugriff verweigert");
+                return;
+            }
 
-            var existingEmployees = _db.LoadEmployees().ToList();
-            int newId = existingEmployees.Any() ? existingEmployees.Max(emp => emp.Id) + 1 : 1;
+            if (NewEmpUsername == null || NewEmpPassword == null)
+            {
+                ZooMessageBox.Show("Login-Felder fehlen im XAML (NewEmpUsername/NewEmpPassword). Bitte XAML prüfen.", "Konfigurationsfehler");
+                return;
+            }
 
-            var newEmp = new Employee 
-            { 
-                Id = newId,
-                FirstName = NewEmpFirstName.Text, 
-                LastName = NewEmpLastName.Text 
+            if (string.IsNullOrWhiteSpace(NewEmpLastName?.Text))
+                return;
+
+            if (string.IsNullOrWhiteSpace(NewEmpUsername.Text) || string.IsNullOrWhiteSpace(NewEmpPassword.Password))
+            {
+                ZooMessageBox.Show("Bitte Benutzername und Passwort für den Login angeben.", "Eingabefehler");
+                return;
+            }
+
+            var newEmp = new Employee
+            {
+                FirstName = NewEmpFirstName?.Text ?? "",
+                LastName = NewEmpLastName.Text
             };
 
-            _db.SaveEmployees(new List<Employee> { newEmp });
-            ZooMessageBox.Show("Mitarbeiter erfolgreich angelegt.", "Personalwesen");
+            _persistenceService.SaveEmployees(new List<Employee> { newEmp });
+
+            if (newEmp.Id <= 0)
+            {
+                ZooMessageBox.Show("Mitarbeiter konnte nicht gespeichert werden (keine ID erhalten).", "Fehler");
+                return;
+            }
+
+            var created = _authService.CreateUser(
+                NewEmpUsername.Text.Trim(),
+                NewEmpPassword.Password,
+                UserRole.Employee,
+                newEmp.Id);
+
+            if (!created)
+            {
+                ZooMessageBox.Show("Benutzername existiert bereits oder Benutzer konnte nicht erstellt werden.", "Login-Fehler");
+                return;
+            }
+
+            ZooMessageBox.Show("Mitarbeiter + Login wurde erfolgreich angelegt.", "Erfolg");
+
             CancelEmployeeEditor_Click(null, null);
             LoadData();
         }
@@ -93,8 +131,7 @@ namespace ZooManager.UI.Views
                     _db.DeleteEmployee(selected.Id);
                     ZooMessageBox.Show("Mitarbeiter und zugehörige Qualifikationen wurden gelöscht.", "Personalverwaltung");
                     LoadData();
-                    
-                    // UI zurücksetzen
+      
                     EmployeeDetailsArea.Visibility = Visibility.Collapsed;
                 }
                 catch (System.Exception ex)

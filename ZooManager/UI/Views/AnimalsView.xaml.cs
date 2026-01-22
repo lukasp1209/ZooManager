@@ -11,33 +11,44 @@ namespace ZooManager.UI.Views
 {
     public partial class AnimalsView : UserControl
     {
-        private SqlitePersistenceService _db;
-        private readonly IAuthenticationService  authService;
+        private readonly IPersistenceService? _persistenceService;
+        private readonly IAuthenticationService? _authService;
 
-        public AnimalsView(IPersistenceService persistenceService,  IAuthenticationService authService)
+        public AnimalsView(IPersistenceService persistenceService = null, IAuthenticationService authService = null)
         {
             InitializeComponent();
-            _db = persistenceService as SqlitePersistenceService ?? 
-                  new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
-            
-            for (int i = 0; i < 24; i++) FeedingHourSelector.Items.Add(i.ToString("D2"));
-            for (int i = 0; i < 60; i += 5) FeedingMinuteSelector.Items.Add(i.ToString("D2"));
-            
+            _persistenceService = persistenceService;
+            _authService = authService;
+
             LoadData();
+            ApplyPermissions();
+        }
+        
+        private void ApplyPermissions()
+        {
+            var role = _authService.GetCurrentUser()?.Role;
+
+            if (role == UserRole.Employee)
+            {
+                if (AddAnimalBtn != null) AddAnimalBtn.Visibility = Visibility.Collapsed;
+                if (DeleteAnimalBtn != null) DeleteAnimalBtn.Visibility = Visibility.Collapsed;
+
+                EditorArea.Visibility = Visibility.Collapsed;
+                DetailsArea.Visibility = Visibility.Visible;
+            }
         }
 
         private void LoadData()
         {
-            var animals = _db.LoadAnimals().ToList();
-            AnimalsList.ItemsSource = animals;
-            
-            SpeciesSelector.ItemsSource = _db.LoadSpecies().ToList();
-            EnclosureSelector.ItemsSource = _db.LoadEnclosures().ToList();
+            AnimalsList.ItemsSource = _persistenceService.LoadAnimals().ToList();
 
-            NewEventDate.SelectedDate = System.DateTime.Now;
-            NewAnimalFeedingDate.SelectedDate = System.DateTime.Now;
-            FeedingHourSelector.SelectedIndex = 12;
-            FeedingMinuteSelector.SelectedIndex = 0;
+            if (_authService.GetCurrentUser()?.Role != UserRole.Employee)
+            {
+                SpeciesSelector.ItemsSource = _persistenceService.LoadSpecies().ToList();
+                EnclosureSelector.ItemsSource = _persistenceService.LoadEnclosures().ToList();
+            }
+
+            NewEventDate.SelectedDate = DateTime.Now;
         }
 
         private void AnimalsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -49,6 +60,14 @@ namespace ZooManager.UI.Views
                 SelectedAnimalNameDetail.Text = selectedAnimal.Name;
                 SelectedAnimalEnclosure.Text = selectedAnimal.EnclosureName;
                 SelectedAnimalFeeding.Text = selectedAnimal.NextFeedingTime.ToString("g");
+
+                EventsList.ItemsSource = selectedAnimal.Events
+                    .OrderByDescending(x => x.Date)
+                    .ToList();
+            }
+            else
+            {
+                EventsList.ItemsSource = null;
             }
         }
 
@@ -78,7 +97,7 @@ namespace ZooManager.UI.Views
             int minute = int.Parse(FeedingMinuteSelector.SelectedItem?.ToString() ?? "0");
             System.DateTime combinedFeedingTime = new System.DateTime(date.Year, date.Month, date.Day, hour, minute, 0);
 
-            var existingAnimals = _db.LoadAnimals().ToList();
+            var existingAnimals = _persistenceService.LoadAnimals().ToList();
             int newId = existingAnimals.Any() ? existingAnimals.Max(a => a.Id) + 1 : 1;
 
             var newAnimal = new Core.Models.Animal
@@ -90,7 +109,7 @@ namespace ZooManager.UI.Views
                 NextFeedingTime = combinedFeedingTime
             };
             
-            _db.SaveAnimals(new List<Core.Models.Animal> { newAnimal });
+            _persistenceService.SaveAnimals(new List<Core.Models.Animal> { newAnimal });
             
             ZooMessageBox.Show($"{newAnimal.Name} wurde erfolgreich angelegt!", "Erfolg");
             CancelEditor_Click(null, null);
@@ -99,55 +118,64 @@ namespace ZooManager.UI.Views
 
         private void DeleteAnimal_Click(object sender, RoutedEventArgs e)
         {
-            if (AnimalsList.SelectedItem is Core.Models.Animal selected)
+            if (_authService.GetCurrentUser()?.Role == UserRole.Employee)
             {
-                try
-                {
-                    _db.DeleteAnimal(selected.Id);
-                    ZooMessageBox.Show($"{selected.Name} wurde aus dem Bestand entfernt.", "Gelöscht");
-                    LoadData();
-                }
-                catch (System.Exception ex)
-                {
-                    ZooMessageBox.Show($"Fehler beim Löschen: {ex.Message}", "Datenbankfehler");
-                }
+                ZooMessageBox.Show("Sie haben keine Berechtigung, Tiere zu löschen.", "Zugriff verweigert");
+                return;
             }
-            else
+
+            if (_persistenceService == null)
             {
-                ZooMessageBox.Show("Bitte wählen Sie zuerst ein Tier aus der Liste aus.", "Hinweis");
+                ZooMessageBox.Show("Datenbank-Service ist nicht initialisiert.", "Fehler");
+                return;
             }
+
+            if (AnimalsList.SelectedItem is not Animal selected)
+                return;
+
+            _persistenceService.DeleteAnimal(selected.Id);
+
+            ZooMessageBox.Show($"{selected.Name} wurde aus dem Bestand entfernt.", "Gelöscht");
+            LoadData();
         }
 
         private void AddEvent_Click(object sender, RoutedEventArgs e)
         {
-            if (AnimalsList.SelectedItem is Core.Models.Animal selectedAnimal)
+            if (!_authService.HasPermission("AddAnimalEvent"))
             {
-                if (string.IsNullOrWhiteSpace(NewEventType.Text) || 
-                    string.IsNullOrWhiteSpace(NewEventDesc.Text) || 
-                    NewEventDate.SelectedDate == null)
-                {
-                    ZooMessageBox.Show("Bitte Datum, Typ und Beschreibung vollständig ausfüllen.", "Eingabe unvollständig");
-                    return;
-                }
-
-                var newEvent = new Core.Models.AnimalEvent
-                {
-                    Date = NewEventDate.SelectedDate.Value,
-                    Type = NewEventType.Text,
-                    Description = NewEventDesc.Text
-                };
-
-                _db.AddAnimalEvent(selectedAnimal.Id, newEvent);
-                
-                // Liste neu laden um konsistente Daten zu haben
-                LoadData();
-
-                NewEventType.Text = "";
-                NewEventDesc.Text = "";
-                NewEventDate.SelectedDate = System.DateTime.Now;
-                
-                ZooMessageBox.Show("Ereignis wurde in der digitalen Akte gespeichert.", "Erfolg");
+                ZooMessageBox.Show("Sie haben keine Berechtigung, Ereignisse hinzuzufügen.", "Zugriff verweigert");
+                return;
             }
+
+            if (AnimalsList.SelectedItem is not Animal selectedAnimal)
+                return;
+
+            if (string.IsNullOrWhiteSpace(NewEventType.Text) ||
+                string.IsNullOrWhiteSpace(NewEventDesc.Text) ||
+                NewEventDate.SelectedDate == null)
+            {
+                ZooMessageBox.Show("Bitte Datum, Typ und Beschreibung vollständig ausfüllen.", "Eingabe unvollständig");
+                return;
+            }
+            
+            var ev = new AnimalEvent
+            {
+                Date = NewEventDate.SelectedDate.Value,
+                Type = NewEventType.Text,
+                Description = NewEventDesc.Text
+            };
+            
+            _persistenceService.AddAnimalEvent(selectedAnimal.Id, ev);
+            
+            selectedAnimal.Events.Insert(0, ev);
+            EventsList.ItemsSource = null;
+            EventsList.ItemsSource = selectedAnimal.Events;
+
+            NewEventType.Text = "";
+            NewEventDesc.Text = "";
+            NewEventDate.SelectedDate = DateTime.Now;
+
+            ZooMessageBox.Show("Ereignis wurde in der digitalen Akte gespeichert.", "Erfolg");
         }
     }
 }

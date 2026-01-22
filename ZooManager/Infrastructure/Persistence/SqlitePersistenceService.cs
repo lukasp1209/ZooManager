@@ -284,7 +284,7 @@ private string GeneratePasswordHash(string password)
             {
                 connection.Open();
                 var cmd = new SqliteCommand(@"
-                    SELECT DISTINCT a.*, s.Name AS SpeciesName, e.Name AS EnclosureName 
+                    SELECT DISTINCT a.*, s.Name AS SpeciesName, enc.Name AS EnclosureName 
                     FROM Animals a 
                     LEFT JOIN Species s ON a.SpeciesId = s.Id 
                     LEFT JOIN Enclosures enc ON a.EnclosureId = enc.Id
@@ -310,6 +310,27 @@ private string GeneratePasswordHash(string password)
                 }
             }
             return animals;
+        }
+        
+        public void AddAnimalEvent(int animalId, AnimalEvent ev)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText =
+                @"INSERT INTO AnimalEvents (AnimalId, EventDate, EventType, Description)
+              VALUES ($animalId, $eventDate, $eventType, $description);";
+
+            cmd.Parameters.AddWithValue("$animalId", animalId);
+
+            // Wichtig: TEXT-Spalte -> ISO-String speichern (passt zu DateTime.Parse beim Laden)
+            cmd.Parameters.AddWithValue("$eventDate", ev.Date.ToString("o"));
+
+            cmd.Parameters.AddWithValue("$eventType", ev.Type ?? string.Empty);
+            cmd.Parameters.AddWithValue("$description", ev.Description ?? string.Empty);
+
+            cmd.ExecuteNonQuery();
         }
 
         public void SaveAnimals(IEnumerable<Animal> animals)
@@ -583,20 +604,6 @@ private string GeneratePasswordHash(string password)
                     cmd.Parameters.AddWithValue("@s", ev.Start.ToString("o"));
                     cmd.ExecuteNonQuery();
                 }
-            }
-        }
-
-        public void AddAnimalEvent(int animalId, AnimalEvent ev)
-        {
-            using (var connection = new SqliteConnection(_connectionString))
-            {
-                connection.Open();
-                var cmd = new SqliteCommand("INSERT INTO AnimalEvents (AnimalId, EventDate, EventType, Description) VALUES (@id, @d, @t, @desc)", connection);
-                cmd.Parameters.AddWithValue("@id", animalId);
-                cmd.Parameters.AddWithValue("@d", ev.Date.ToString("o"));
-                cmd.Parameters.AddWithValue("@t", ev.Type);
-                cmd.Parameters.AddWithValue("@desc", ev.Description);
-                cmd.ExecuteNonQuery();
             }
         }
 

@@ -34,7 +34,7 @@ namespace ZooManager.Infrastructure.Authentication
         public bool CreateUser(string username, string password, UserRole role, int? employeeId = null)
         {
             if (_persistenceService.GetUserByUsername(username) != null)
-                return false; // User already exists
+                return false; 
 
             var passwordHash = HashPassword(password);
             var user = new User
@@ -72,15 +72,19 @@ namespace ZooManager.Infrastructure.Authentication
             
             return _currentUser.Role switch
             {
-                UserRole.ZooManager => true, // ZooManager hat alle Rechte
+                UserRole.Admin => true,
+                UserRole.ZooManager => true,
+
                 UserRole.Employee => action switch
                 {
                     "ViewAnimals" => true,
+                    "ViewFeedingPlan" => true,
                     "ViewEvents" => true,
-                    "ViewFeeding" => true,
                     "ConfirmFeeding" => true,
-                    _ => false // Alle anderen Aktionen sind für Mitarbeiter verboten
+                    "AddAnimalEvent" => true,
+                    _ => false
                 },
+
                 _ => false
             };
         }

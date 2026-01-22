@@ -6,7 +6,9 @@ namespace ZooManager.Core.Interfaces
     public interface IPersistenceService
     {
         IEnumerable<Animal> LoadAnimals();
+        IEnumerable<Animal> LoadAnimalsForEmployee(int employeeId);
         void SaveAnimals(IEnumerable<Animal> animals);
+        
 
         IEnumerable<Species> LoadSpecies();
         void SaveSpecies(IEnumerable<Species> species);
@@ -21,14 +23,12 @@ namespace ZooManager.Core.Interfaces
         void SaveEvents(IEnumerable<ZooEvent> events);
         
         User? GetUserByUsername(string username);
-        User? GetUserById(int id);
+        User? GetUserById(int userId);
         bool SaveUser(User user);
-    }
 
-    public interface IValidationService
-    {
-        bool ValidateAnimal(Animal animal, out IEnumerable<string> errors);
-        bool ValidateEnclosure(Enclosure enclosure, out IEnumerable<string> errors);
-        bool ValidateEvent(ZooEvent zooEvent, out IEnumerable<string> errors);
+        void AddAnimalEvent(int animalId, AnimalEvent ev);
+        
+        void DeleteAnimal(int animalId);
     }
+    
 }

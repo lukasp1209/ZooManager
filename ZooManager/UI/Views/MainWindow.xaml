@@ -30,67 +30,62 @@
 
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
-                            VerticalAlignment="Center">
-                    
-                    <!-- User Info -->
-                    <Border Background="#000000" 
-                            CornerRadius="6" 
-                            Padding="16,8"
-                            Margin="0,0,12,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="👤" 
-                                       FontSize="18" 
-                                       Margin="0,0,8,0"
-                                       VerticalAlignment="Center"/>
-                            <StackPanel>
-                                <TextBlock x:Name="UsernameText"
-                                           Text="Benutzername"
-                                           FontWeight="SemiBold"
-                                           FontSize="14"
-                                           Foreground="White"/>
-                                <TextBlock x:Name="UserRoleText"
-                                           Text="Rolle"
-                                           FontSize="11"
-                                           Foreground="#FFFFFFCC"/>
+                                VerticalAlignment="Center">
+
+                        <!-- User Chip (passt zum Layout) -->
+                        <Border Background="#26FFFFFF"
+                                CornerRadius="10"
+                                Padding="12,8"
+                                Margin="0,0,12,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse x:Name="UserIcon"
+                                         Width="32" Height="32"
+                                         Fill="#E8F5E9"
+                                         Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="UsernameText"
+                                               Text="Benutzername"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="White"/>
+                                    <TextBlock x:Name="UserRoleText"
+                                               Text="Rolle"
+                                               FontSize="11"
+                                               Foreground="#CCFFFFFF"/>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
-                    </Border>
-                    
-                    <!-- Logout Button -->
-                    <Button x:Name="LogoutButton"
-                            Content="Abmelden"
-                            Height="36"
-                            Padding="16,0"
-                            Background="#000000"
-                            Foreground="White"
-                            BorderThickness="0"
-                            FontSize="13"
-                            FontWeight="SemiBold"
-                            Cursor="Hand"
-                            Click="LogoutButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" 
-                                                    CornerRadius="6" 
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" 
-                                                                VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#FFFFFF30"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                </StackPanel>
+                        </Border>
+
+                        <!-- Logout Button (wie andere Controls, nur header-tauglich) -->
+                        <Button x:Name="LogoutButton"
+                                Click="LogoutButton_Click"
+                                Background="#26FFFFFF"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Padding="14,8"
+                                Cursor="Hand"
+                                ToolTip="Abmelden">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="10"
+                                            Padding="{TemplateBinding Padding}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="Abmelden" FontWeight="SemiBold" FontSize="13"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#33FFFFFF"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="Background" Value="#40FFFFFF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
             </Grid>
         </Border>
 
@@ -106,20 +101,21 @@
                 <StackPanel Margin="16">
 
                     <TextBlock Text="Navigation"
-                               FontWeight="Bold"
+                                FontWeight="Bold"
                                Foreground="{StaticResource TextMutedBrush}"
                                Margin="8,0,0,16"/>
 
-                    <Button Content="Dashboard" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Dashboard"/>
-                    <Button Content="Tiere" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Animals"/>
-                    <Button Content="Tierart" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Species"/>
-                    <Button Content="Gehege" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Enclosures"/>
-                    <Button Content="Mitarbeiter" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Employees"/>
-                    <Button Content="Fütterung" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="FeedingPlan"/>
-                    
+                    <Button x:Name="DashboardButton" Content="Dashboard" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Dashboard"/>
+                    <Button x:Name="AnimalsButton" Content="Tiere" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Animals"/>
+                    <Button x:Name="SpeciesButton" Content="Tierart" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Species"/>
+                    <Button x:Name="EnclosuresButton" Content="Gehege" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Enclosures"/>
+                    <Button x:Name="EmployeesButton" Content="Mitarbeiter" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Employees"/>
+                    <Button x:Name="FeedingPlanButton" Content="Fütterung" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="FeedingPlan"/>
+
                     <Separator Margin="0,16"/>
-                    <Button Content="Events" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Events"/>  
-                    <Button Content="Statistik" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Reports"/>
+
+                    <Button x:Name="EventsButton" Content="Events" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Events"/>
+                    <Button x:Name="ReportsButton" Content="Statistik" Style="{StaticResource NavButton}" Click="NavButton_Click" Tag="Reports"/>
                 </StackPanel>
             </Border>
 
