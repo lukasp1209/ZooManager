@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
@@ -14,10 +15,11 @@ namespace ZooManager.UI.Views
     {
         private SqlitePersistenceService _db;
 
-        public FeedingView()
+        public FeedingView(IPersistenceService persistenceService = null)
         {
             InitializeComponent();
-            _db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
+            _db = persistenceService as SqlitePersistenceService ?? 
+                  new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             
             for (int i = 0; i < 24; i++) EditFeedingHour.Items.Add(i.ToString("D2"));
             for (int i = 0; i < 60; i += 5) EditFeedingMinute.Items.Add(i.ToString("D2"));

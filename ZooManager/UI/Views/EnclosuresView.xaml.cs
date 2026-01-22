@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 using ZooManager.Core.Services;
 using ZooManager.Infrastructure.Persistence;
@@ -15,19 +16,21 @@ namespace ZooManager.UI.Views
         private List<Animal> _allAnimals;
         private List<Species> _species;
         private EnclosureValidationService _validator = new EnclosureValidationService();
+        private SqlitePersistenceService _db;
 
-        public EnclosuresView()
+        public EnclosuresView(IPersistenceService persistenceService = null)
         {
             InitializeComponent();
+            _db = persistenceService as SqlitePersistenceService ?? 
+                  new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             LoadData();
         }
 
         private void LoadData()
         {
-            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
-            _enclosures = db.LoadEnclosures().ToList();
-            _allAnimals = db.LoadAnimals().ToList();
-            _species = db.LoadSpecies().ToList();
+            _enclosures = _db.LoadEnclosures().ToList();
+            _allAnimals = _db.LoadAnimals().ToList();
+            _species = _db.LoadSpecies().ToList();
 
             EnclosureList.ItemsSource = _enclosures;
             AllAnimalsSelector.ItemsSource = _allAnimals;
@@ -59,6 +62,8 @@ namespace ZooManager.UI.Views
                 if (_validator.IsSuitable(selectedAnimal, species, selectedEnclosure, currentCount))
                 {
                     selectedAnimal.EnclosureId = selectedEnclosure.Id;
+                    _db.SaveAnimals(new List<Animal> { selectedAnimal });
+                    LoadData(); // Daten neu laden
                     ZooMessageBox.Show($"{selectedAnimal.Name} wurde erfolgreich zugeordnet.", "Erfolg");
                 }
                 else
@@ -92,16 +97,20 @@ namespace ZooManager.UI.Views
                 return;
             }
 
-            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
+            var existingEnclosures = _db.LoadEnclosures().ToList();
+            int newId = existingEnclosures.Any() ? existingEnclosures.Max(enc => enc.Id) + 1 : 1;
+
             var newEnc = new Enclosure
             {
+                Id = newId,
                 Name = NewEnclosureName.Text,
                 ClimateType = (NewEnclosureClimate.SelectedItem as ComboBoxItem).Content.ToString(),
+                HasWaterAccess = NewEnclosureHasWater.IsChecked == true,
                 TotalArea = double.TryParse(NewEnclosureArea.Text, out double a) ? a : 0,
                 MaxCapacity = int.TryParse(NewEnclosureCapacity.Text, out int c) ? c : 1
             };
 
-            db.SaveEnclosures(new List<Enclosure> { newEnc });
+            _db.SaveEnclosures(new List<Enclosure> { newEnc });
             
             ZooMessageBox.Show($"Anlage '{newEnc.Name}' wurde erstellt.", "Erfolg");
             CancelEnclosureEditor_Click(null, null);
@@ -112,23 +121,29 @@ namespace ZooManager.UI.Views
         {
             if (EnclosureList.SelectedItem is Enclosure selected)
             {
-                // Prüfen, ob noch Tiere im Gehege sind (Wichtig für ANF2)
                 if (_allAnimals.Any(a => a.EnclosureId == selected.Id))
                 {
                     ZooMessageBox.Show("Anlage kann nicht gelöscht werden, da sie noch bewohnt ist!", "Sperre");
                     return;
                 }
 
-                using (var conn = new MySql.Data.MySqlClient.MySqlConnection(DatabaseConfig.GetConnectionString()))
+                try
                 {
-                    conn.Open();
-                    var cmd = new MySql.Data.MySqlClient.MySqlCommand("DELETE FROM Enclosures WHERE Id = @id", conn);
-                    cmd.Parameters.AddWithValue("@id", selected.Id);
-                    cmd.ExecuteNonQuery();
+                    _db.DeleteEnclosure(selected.Id);
+                    ZooMessageBox.Show("Anlage wurde gelöscht.", "Info");
+                    LoadData();
+                    
+                    // UI zurücksetzen
+                    EnclosureDetailsArea.Visibility = Visibility.Collapsed;
                 }
-
-                ZooMessageBox.Show("Anlage wurde gelöscht.", "Info");
-                LoadData();
+                catch (System.Exception ex)
+                {
+                    ZooMessageBox.Show($"Fehler beim Löschen: {ex.Message}", "Datenbankfehler");
+                }
+            }
+            else
+            {
+                ZooMessageBox.Show("Bitte wählen Sie zuerst eine Anlage aus der Liste aus.", "Hinweis");
             }
         }
     }

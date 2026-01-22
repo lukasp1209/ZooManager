@@ -4,15 +4,20 @@ using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
 using System.Linq;
 using System.Windows;
+using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 
 namespace ZooManager.UI.Views
 {
     public partial class AnimalsView : UserControl
     {
-        public AnimalsView()
+        private SqlitePersistenceService _db;
+
+        public AnimalsView(IPersistenceService persistenceService = null)
         {
             InitializeComponent();
+            _db = persistenceService as SqlitePersistenceService ?? 
+                  new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             
             for (int i = 0; i < 24; i++) FeedingHourSelector.Items.Add(i.ToString("D2"));
             for (int i = 0; i < 60; i += 5) FeedingMinuteSelector.Items.Add(i.ToString("D2"));
@@ -22,12 +27,11 @@ namespace ZooManager.UI.Views
 
         private void LoadData()
         {
-            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
-            var animals = db.LoadAnimals().ToList();
+            var animals = _db.LoadAnimals().ToList();
             AnimalsList.ItemsSource = animals;
             
-            SpeciesSelector.ItemsSource = db.LoadSpecies().ToList();
-            EnclosureSelector.ItemsSource = db.LoadEnclosures().ToList();
+            SpeciesSelector.ItemsSource = _db.LoadSpecies().ToList();
+            EnclosureSelector.ItemsSource = _db.LoadEnclosures().ToList();
 
             NewEventDate.SelectedDate = System.DateTime.Now;
             NewAnimalFeedingDate.SelectedDate = System.DateTime.Now;
@@ -73,16 +77,19 @@ namespace ZooManager.UI.Views
             int minute = int.Parse(FeedingMinuteSelector.SelectedItem?.ToString() ?? "0");
             System.DateTime combinedFeedingTime = new System.DateTime(date.Year, date.Month, date.Day, hour, minute, 0);
 
-            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
+            var existingAnimals = _db.LoadAnimals().ToList();
+            int newId = existingAnimals.Any() ? existingAnimals.Max(a => a.Id) + 1 : 1;
+
             var newAnimal = new Core.Models.Animal
             {
+                Id = newId,
                 Name = NewAnimalName.Text,
                 SpeciesId = ((Core.Models.Species)SpeciesSelector.SelectedItem).Id,
-                EnclosureId = EnclosureSelector.SelectedItem != null ? ((Core.Models.Enclosure)EnclosureSelector.SelectedItem).Id : 0,
+                EnclosureId = EnclosureSelector.SelectedItem != null ? ((Core.Models.Enclosure)EnclosureSelector.SelectedItem).Id : null,
                 NextFeedingTime = combinedFeedingTime
             };
             
-            db.SaveAnimals(new List<Core.Models.Animal> { newAnimal });
+            _db.SaveAnimals(new List<Core.Models.Animal> { newAnimal });
             
             ZooMessageBox.Show($"{newAnimal.Name} wurde erfolgreich angelegt!", "Erfolg");
             CancelEditor_Click(null, null);
@@ -93,18 +100,20 @@ namespace ZooManager.UI.Views
         {
             if (AnimalsList.SelectedItem is Core.Models.Animal selected)
             {
-                var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
-                
-                using (var conn = new Microsoft.Data.Sqlite.SqliteConnection(DatabaseConfig.GetConnectionString()))
+                try
                 {
-                    conn.Open();
-                    var cmd = new Microsoft.Data.Sqlite.SqliteCommand("DELETE FROM Animals WHERE Id = @id", conn);
-                    cmd.Parameters.AddWithValue("@id", selected.Id);
-                    cmd.ExecuteNonQuery();
+                    _db.DeleteAnimal(selected.Id);
+                    ZooMessageBox.Show($"{selected.Name} wurde aus dem Bestand entfernt.", "Gelöscht");
+                    LoadData();
                 }
-
-                ZooMessageBox.Show($"{selected.Name} wurde aus dem Bestand entfernt.", "Gelöscht");
-                LoadData();
+                catch (System.Exception ex)
+                {
+                    ZooMessageBox.Show($"Fehler beim Löschen: {ex.Message}", "Datenbankfehler");
+                }
+            }
+            else
+            {
+                ZooMessageBox.Show("Bitte wählen Sie zuerst ein Tier aus der Liste aus.", "Hinweis");
             }
         }
 
@@ -127,13 +136,10 @@ namespace ZooManager.UI.Views
                     Description = NewEventDesc.Text
                 };
 
-                var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
-                db.AddAnimalEvent(selectedAnimal.Id, newEvent);
+                _db.AddAnimalEvent(selectedAnimal.Id, newEvent);
                 
-                selectedAnimal.Events.Add(newEvent);
-                var sortedEvents = selectedAnimal.Events.OrderByDescending(x => x.Date).ToList();
-                selectedAnimal.Events = sortedEvents;
-                EventsList.ItemsSource = sortedEvents;
+                // Liste neu laden um konsistente Daten zu haben
+                LoadData();
 
                 NewEventType.Text = "";
                 NewEventDesc.Text = "";

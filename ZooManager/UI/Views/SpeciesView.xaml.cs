@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
@@ -10,16 +11,19 @@ namespace ZooManager.UI.Views
 {
     public partial class SpeciesView : UserControl
     {
-        public SpeciesView()
+        private SqlitePersistenceService _db;
+
+        public SpeciesView(IPersistenceService persistenceService = null)
         {
             InitializeComponent();
+            _db = persistenceService as SqlitePersistenceService ?? 
+                  new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             LoadData();
         }
 
         private void LoadData()
         {
-            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
-            SpeciesList.ItemsSource = db.LoadSpecies().ToList();
+            SpeciesList.ItemsSource = _db.LoadSpecies().ToList();
         }
 
         private void SpeciesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -55,15 +59,19 @@ namespace ZooManager.UI.Views
         {
             if (string.IsNullOrWhiteSpace(NewSpeciesName.Text)) return;
 
-            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
+            var existingSpecies = _db.LoadSpecies().ToList();
+            int newId = existingSpecies.Any() ? existingSpecies.Max(s => s.Id) + 1 : 1;
+
             var newSpecies = new Species
             {
+                Id = newId,
                 Name = NewSpeciesName.Text,
                 RequiredClimate = (NewSpeciesClimate.SelectedItem as ComboBoxItem)?.Content.ToString(),
+                NeedsWater = NewSpeciesNeedsWater.IsChecked == true,
                 MinSpacePerAnimal = double.TryParse(NewSpeciesSpace.Text, out double s) ? s : 0
             };
 
-            db.SaveSpecies(new List<Species> { newSpecies });
+            _db.SaveSpecies(new List<Species> { newSpecies });
             ZooMessageBox.Show($"Tierart '{newSpecies.Name}' wurde gespeichert.", "Erfolg");
             CancelSpeciesEditor_Click(null, null);
             LoadData();
@@ -73,24 +81,30 @@ namespace ZooManager.UI.Views
         {
             if (SpeciesList.SelectedItem is Species selected)
             {
-                var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
                 // Prüfen, ob noch Tiere dieser Art existieren
-                if (db.LoadAnimals().Any(a => a.SpeciesId == selected.Id))
+                if (_db.LoadAnimals().Any(a => a.SpeciesId == selected.Id))
                 {
                     ZooMessageBox.Show("Löschen nicht möglich: Es existieren noch Tiere dieser Art.", "Fehler");
                     return;
                 }
 
-                using (var conn = new MySql.Data.MySqlClient.MySqlConnection(DatabaseConfig.GetConnectionString()))
+                try
                 {
-                    conn.Open();
-                    var cmd = new MySql.Data.MySqlClient.MySqlCommand("DELETE FROM Species WHERE Id = @id", conn);
-                    cmd.Parameters.AddWithValue("@id", selected.Id);
-                    cmd.ExecuteNonQuery();
+                    _db.DeleteSpecies(selected.Id);
+                    ZooMessageBox.Show("Tierart gelöscht.", "Info");
+                    LoadData();
+                    
+                    // UI zurücksetzen
+                    SpeciesDetailsArea.Visibility = Visibility.Collapsed;
                 }
-
-                ZooMessageBox.Show("Tierart gelöscht.", "Info");
-                LoadData();
+                catch (System.Exception ex)
+                {
+                    ZooMessageBox.Show($"Fehler beim Löschen: {ex.Message}", "Datenbankfehler");
+                }
+            }
+            else
+            {
+                ZooMessageBox.Show("Bitte wählen Sie zuerst eine Tierart aus der Liste aus.", "Hinweis");
             }
         }
     }

@@ -16,10 +16,5 @@ namespace ZooManager.Core.Models
         public System.DateTime NextFeedingTime { get; set; } 
     }
 
-    public class AnimalEvent
-    {
-        public DateTime Date { get; set; }
-        public string Type { get; set; }
-        public string Description { get; set; }
-    }
+  
 }

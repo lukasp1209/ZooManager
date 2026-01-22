@@ -25,16 +25,32 @@ namespace ZooManager.Infrastructure.Persistence
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
-                var cmd = connection.CreateCommand();
                 
+                // DIESE ZEILE IST ENTSCHEIDEND:
+                var pragmaCmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection);
+                pragmaCmd.ExecuteNonQuery();
+
+                var cmd = connection.CreateCommand();
                 // 1. Tabellen erstellen (wie gehabt)
                 cmd.CommandText = @"
         CREATE TABLE IF NOT EXISTS Species (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, RequiredClimate TEXT, NeedsWater INTEGER, MinSpacePerAnimal REAL);
         CREATE TABLE IF NOT EXISTS Enclosures (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, ClimateType TEXT, HasWaterAccess INTEGER, TotalArea REAL, MaxCapacity INTEGER);
         CREATE TABLE IF NOT EXISTS Animals (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, SpeciesId INTEGER, EnclosureId INTEGER, NextFeedingTime TEXT);
-        CREATE TABLE IF NOT EXISTS AnimalEvents (AnimalId INTEGER, EventDate TEXT, EventType TEXT, Description TEXT);
+        CREATE TABLE IF NOT EXISTS AnimalEvents (
+            AnimalId INTEGER,
+            EventDate TEXT,
+            EventType TEXT,
+            Description TEXT,
+            FOREIGN KEY(AnimalId) REFERENCES Animals(Id) ON DELETE CASCADE
+        );
         CREATE TABLE IF NOT EXISTS Employees (Id INTEGER PRIMARY KEY AUTOINCREMENT, FirstName TEXT, LastName TEXT);
-        CREATE TABLE IF NOT EXISTS EmployeeQualifications (EmployeeId INTEGER, SpeciesId INTEGER, PRIMARY KEY (EmployeeId, SpeciesId));
+        CREATE TABLE IF NOT EXISTS EmployeeQualifications (
+            EmployeeId INTEGER,
+            SpeciesId INTEGER,
+            PRIMARY KEY (EmployeeId, SpeciesId),
+            FOREIGN KEY(EmployeeId) REFERENCES Employees(Id) ON DELETE CASCADE,
+            FOREIGN KEY(SpeciesId) REFERENCES Species(Id) ON DELETE CASCADE
+        );
         CREATE TABLE IF NOT EXISTS ZooEvents (Id INTEGER PRIMARY KEY AUTOINCREMENT, Title TEXT, Description TEXT, Start TEXT);
         CREATE TABLE IF NOT EXISTS SpeciesFieldDefinitions (Id INTEGER PRIMARY KEY AUTOINCREMENT, SpeciesId INTEGER, FieldName TEXT);
         CREATE TABLE IF NOT EXISTS AnimalAttributes (AnimalId INTEGER, FieldDefinitionId INTEGER, ValueText TEXT, PRIMARY KEY(AnimalId, FieldDefinitionId));
@@ -96,7 +112,6 @@ namespace ZooManager.Infrastructure.Persistence
 
                 foreach (var animal in animals)
                 {
-                    // Events laden
                     var evCmd = new SqliteCommand("SELECT EventDate, EventType, Description FROM AnimalEvents WHERE AnimalId = @id", connection);
                     evCmd.Parameters.AddWithValue("@id", animal.Id);
                     using (var r = evCmd.ExecuteReader())
@@ -104,8 +119,7 @@ namespace ZooManager.Infrastructure.Persistence
                         while (r.Read())
                             animal.Events.Add(new AnimalEvent { Date = DateTime.Parse(r.GetString(0)), Type = r.GetString(1), Description = r.GetString(2) });
                     }
-
-                    // Attribute laden
+                    
                     var attrCmd = new SqliteCommand(@"
                         SELECT d.FieldName, a.ValueText 
                         FROM AnimalAttributes a 
@@ -128,15 +142,33 @@ namespace ZooManager.Infrastructure.Persistence
                 connection.Open();
                 foreach (var animal in animals)
                 {
-                    var cmd = new SqliteCommand(@"
-                        INSERT OR REPLACE INTO Animals (Id, Name, SpeciesId, EnclosureId, NextFeedingTime) 
-                        VALUES (@id, @n, @sid, @eid, @ft)", connection);
-                    cmd.Parameters.AddWithValue("@id", animal.Id);
+                    SqliteCommand cmd;
+                    if (animal.Id <= 0) // Neues Tier
+                    {
+                        cmd = new SqliteCommand(@"
+                            INSERT INTO Animals (Name, SpeciesId, EnclosureId, NextFeedingTime) 
+                            VALUES (@n, @sid, @eid, @ft)", connection);
+                    }
+                    else // Bestehendes Tier aktualisieren
+                    {
+                        cmd = new SqliteCommand(@"
+                            INSERT OR REPLACE INTO Animals (Id, Name, SpeciesId, EnclosureId, NextFeedingTime) 
+                            VALUES (@id, @n, @sid, @eid, @ft)", connection);
+                        cmd.Parameters.AddWithValue("@id", animal.Id);
+                    }
+                    
                     cmd.Parameters.AddWithValue("@n", animal.Name);
                     cmd.Parameters.AddWithValue("@sid", animal.SpeciesId);
                     cmd.Parameters.AddWithValue("@eid", (object)animal.EnclosureId ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@ft", animal.NextFeedingTime.ToString("o"));
                     cmd.ExecuteNonQuery();
+
+                    // Neue ID für neue Tiere abrufen
+                    if (animal.Id <= 0)
+                    {
+                        var idCmd = new SqliteCommand("SELECT last_insert_rowid()", connection);
+                        animal.Id = Convert.ToInt32(idCmd.ExecuteScalar());
+                    }
 
                     foreach (var attr in animal.Attributes)
                     {
@@ -187,11 +219,28 @@ namespace ZooManager.Infrastructure.Persistence
                 connection.Open();
                 foreach (var emp in employees)
                 {
-                    var cmd = new SqliteCommand("INSERT OR REPLACE INTO Employees (Id, FirstName, LastName) VALUES (@id, @f, @l)", connection);
-                    cmd.Parameters.AddWithValue("@id", emp.Id);
+                    SqliteCommand cmd;
+                    if (emp.Id <= 0) // Neuer Mitarbeiter
+                    {
+                        cmd = new SqliteCommand("INSERT INTO Employees (FirstName, LastName) VALUES (@f, @l)", connection);
+                    }
+                    else // Bestehender Mitarbeiter aktualisieren
+                    {
+                        cmd = new SqliteCommand("INSERT OR REPLACE INTO Employees (Id, FirstName, LastName) VALUES (@id, @f, @l)", connection);
+                        cmd.Parameters.AddWithValue("@id", emp.Id);
+                    }
+                    
                     cmd.Parameters.AddWithValue("@f", emp.FirstName);
                     cmd.Parameters.AddWithValue("@l", emp.LastName);
                     cmd.ExecuteNonQuery();
+
+                    // Neue ID für neue Mitarbeiter abrufen
+                    if (emp.Id <= 0)
+                    {
+                        var idCmd = new SqliteCommand("SELECT last_insert_rowid()", connection);
+                        emp.Id = Convert.ToInt32(idCmd.ExecuteScalar());
+                    }
+
                     SaveEmployeeQualifications(emp.Id, emp.QualifiedSpeciesIds);
                 }
             }
@@ -241,13 +290,29 @@ namespace ZooManager.Infrastructure.Persistence
                 connection.Open();
                 foreach (var s in speciesList)
                 {
-                    var cmd = new SqliteCommand("INSERT OR REPLACE INTO Species (Id, Name, RequiredClimate, NeedsWater, MinSpacePerAnimal) VALUES (@id, @n, @c, @w, @s)", connection);
-                    cmd.Parameters.AddWithValue("@id", s.Id);
+                    SqliteCommand cmd;
+                    if (s.Id <= 0) // Neue Art
+                    {
+                        cmd = new SqliteCommand("INSERT INTO Species (Name, RequiredClimate, NeedsWater, MinSpacePerAnimal) VALUES (@n, @c, @w, @s)", connection);
+                    }
+                    else // Bestehende Art aktualisieren
+                    {
+                        cmd = new SqliteCommand("INSERT OR REPLACE INTO Species (Id, Name, RequiredClimate, NeedsWater, MinSpacePerAnimal) VALUES (@id, @n, @c, @w, @s)", connection);
+                        cmd.Parameters.AddWithValue("@id", s.Id);
+                    }
+                    
                     cmd.Parameters.AddWithValue("@n", s.Name);
                     cmd.Parameters.AddWithValue("@c", (object)s.RequiredClimate ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@w", s.NeedsWater ? 1 : 0);
                     cmd.Parameters.AddWithValue("@s", s.MinSpacePerAnimal);
                     cmd.ExecuteNonQuery();
+
+                    // Neue ID für neue Arten abrufen
+                    if (s.Id <= 0)
+                    {
+                        var idCmd = new SqliteCommand("SELECT last_insert_rowid()", connection);
+                        s.Id = Convert.ToInt32(idCmd.ExecuteScalar());
+                    }
                 }
             }
         }
@@ -277,14 +342,30 @@ namespace ZooManager.Infrastructure.Persistence
                 connection.Open();
                 foreach (var enc in enclosures)
                 {
-                    var cmd = new SqliteCommand("INSERT OR REPLACE INTO Enclosures (Id, Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) VALUES (@id, @n, @c, @w, @a, @m)", connection);
-                    cmd.Parameters.AddWithValue("@id", enc.Id);
+                    SqliteCommand cmd;
+                    if (enc.Id <= 0) // Neues Gehege
+                    {
+                        cmd = new SqliteCommand("INSERT INTO Enclosures (Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) VALUES (@n, @c, @w, @a, @m)", connection);
+                    }
+                    else // Bestehendes Gehege aktualisieren
+                    {
+                        cmd = new SqliteCommand("INSERT OR REPLACE INTO Enclosures (Id, Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) VALUES (@id, @n, @c, @w, @a, @m)", connection);
+                        cmd.Parameters.AddWithValue("@id", enc.Id);
+                    }
+                    
                     cmd.Parameters.AddWithValue("@n", enc.Name);
                     cmd.Parameters.AddWithValue("@c", enc.ClimateType);
                     cmd.Parameters.AddWithValue("@w", enc.HasWaterAccess ? 1 : 0);
                     cmd.Parameters.AddWithValue("@a", enc.TotalArea);
                     cmd.Parameters.AddWithValue("@m", enc.MaxCapacity);
                     cmd.ExecuteNonQuery();
+
+                    // Neue ID für neue Gehege abrufen
+                    if (enc.Id <= 0)
+                    {
+                        var idCmd = new SqliteCommand("SELECT last_insert_rowid()", connection);
+                        enc.Id = Convert.ToInt32(idCmd.ExecuteScalar());
+                    }
                 }
             }
         }
@@ -295,10 +376,18 @@ namespace ZooManager.Infrastructure.Persistence
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
-                var cmd = new SqliteCommand("SELECT * FROM ZooEvents ORDER BY Start ASC", connection);
+                var cmd = new SqliteCommand("SELECT Title, Description, Start FROM ZooEvents ORDER BY Start ASC", connection);
                 using (var r = cmd.ExecuteReader())
                 {
-                    while (r.Read()) list.Add(new ZooEvent { Title = r.GetString(0), Description = r.GetString(1), Start = DateTime.Parse(r.GetString(2)) });
+                    while (r.Read())
+                    {
+                        list.Add(new ZooEvent 
+                        { 
+                            Title = r.GetString(r.GetOrdinal("Title")), 
+                            Description = r.GetString(r.GetOrdinal("Description")), 
+                            Start = DateTime.Parse(r.GetString(r.GetOrdinal("Start"))) 
+                        });
+                    }
                 }
             }
             return list;
@@ -330,6 +419,75 @@ namespace ZooManager.Infrastructure.Persistence
                 cmd.Parameters.AddWithValue("@d", ev.Date.ToString("o"));
                 cmd.Parameters.AddWithValue("@t", ev.Type);
                 cmd.Parameters.AddWithValue("@desc", ev.Description);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void DeleteAnimal(int animalId)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                // PRAGMA foreign_keys aktivieren für CASCADE DELETE
+                var pragmaCmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection);
+                pragmaCmd.ExecuteNonQuery();
+                
+                var cmd = new SqliteCommand("DELETE FROM Animals WHERE Id = @id", connection);
+                cmd.Parameters.AddWithValue("@id", animalId);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void DeleteEvent(string title, DateTime start)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                var cmd = new SqliteCommand("DELETE FROM ZooEvents WHERE Title = @t AND Start = @s", connection);
+                cmd.Parameters.AddWithValue("@t", title);
+                cmd.Parameters.AddWithValue("@s", start.ToString("o"));
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void DeleteEmployee(int employeeId)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                var pragmaCmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection);
+                pragmaCmd.ExecuteNonQuery();
+                
+                var cmd = new SqliteCommand("DELETE FROM Employees WHERE Id = @id", connection);
+                cmd.Parameters.AddWithValue("@id", employeeId);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void DeleteSpecies(int speciesId)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                var pragmaCmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection);
+                pragmaCmd.ExecuteNonQuery();
+                
+                var cmd = new SqliteCommand("DELETE FROM Species WHERE Id = @id", connection);
+                cmd.Parameters.AddWithValue("@id", speciesId);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void DeleteEnclosure(int enclosureId)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                var pragmaCmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection);
+                pragmaCmd.ExecuteNonQuery();
+                
+                var cmd = new SqliteCommand("DELETE FROM Enclosures WHERE Id = @id", connection);
+                cmd.Parameters.AddWithValue("@id", enclosureId);
                 cmd.ExecuteNonQuery();
             }
         }

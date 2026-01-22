@@ -9,19 +9,22 @@ namespace ZooManager.UI.Views
     public partial class DashboardView : UserControl
     {
         private readonly IPersistenceService _db;
-        public DashboardView(IPersistenceService persistenceService)
+        
+        public DashboardView(IPersistenceService persistenceService = null)
         {
-            _db = persistenceService;
-            InitializeComponent();
-            LoadDashboardStats(new SqlitePersistenceService("zoo.db"));
+            InitializeComponent(); 
+            
+            _db = persistenceService ?? new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
+            
+            LoadDashboardStats();
         }
 
-        private void LoadDashboardStats(SqlitePersistenceService db)
+        private void LoadDashboardStats()
         {
-            var allAnimals = db.LoadAnimals().ToList();
-            var allEnclosures = db.LoadEnclosures().ToList();
-            var allEmployees = db.LoadEmployees().ToList();
-            var allEvents = db.LoadEvents().ToList();
+            var allAnimals = _db.LoadAnimals().ToList();
+            var allEnclosures = _db.LoadEnclosures().ToList();
+            var allEmployees = _db.LoadEmployees().ToList();
+            var allEvents = _db.LoadEvents().ToList();
             
             TotalAnimalsText.Text = allAnimals.Count.ToString();
             TotalEnclosuresText.Text = allEnclosures.Count.ToString();
@@ -38,9 +41,14 @@ namespace ZooManager.UI.Views
                 .ToList();
         }
 
+        // Methode zum manuellen Aktualisieren der Daten
+        public void RefreshData()
+        {
+            LoadDashboardStats();
+        }
+
         private void OpenFeedingPlan_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            // Navigation zum Fütterungsplan UserControl
             var mainWindow = System.Windows.Window.GetWindow(this) as MainWindow;
             if (mainWindow != null)
             {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
+using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
@@ -12,10 +13,11 @@ namespace ZooManager.UI.Views
     {
         private SqlitePersistenceService _db;
 
-        public ReportsView()
+        public ReportsView(IPersistenceService persistenceService = null)
         {
             InitializeComponent();
-            _db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
+            _db = persistenceService as SqlitePersistenceService ?? 
+                  new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
         }
 
         private void ReportTypeList_SelectionChanged(object sender, SelectionChangedEventArgs e)

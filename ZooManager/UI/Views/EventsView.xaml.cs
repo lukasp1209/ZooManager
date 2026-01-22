@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
@@ -13,15 +14,15 @@ namespace ZooManager.UI.Views
     {
         private SqlitePersistenceService _db;
 
-        public EventsView()
+        public EventsView(IPersistenceService persistenceService = null)
         {
             InitializeComponent();
-            _db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
-            
-            // Zeit-Selektoren füllen
+            _db = persistenceService as SqlitePersistenceService ?? 
+                  new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
+        
             for (int i = 0; i < 24; i++) HourSelector.Items.Add(i.ToString("D2"));
             for (int i = 0; i < 60; i += 5) MinuteSelector.Items.Add(i.ToString("D2"));
-            
+        
             LoadData();
         }
 
@@ -85,16 +86,23 @@ namespace ZooManager.UI.Views
         {
             if (EventsList.SelectedItem is ZooEvent selected)
             {
-                using (var conn = new MySql.Data.MySqlClient.MySqlConnection(DatabaseConfig.GetConnectionString()))
+                try 
                 {
-                    conn.Open();
-                    var cmd = new MySql.Data.MySqlClient.MySqlCommand("DELETE FROM ZooEvents WHERE Title = @t AND Start = @s", conn);
-                    cmd.Parameters.AddWithValue("@t", selected.Title);
-                    cmd.Parameters.AddWithValue("@s", selected.Start);
-                    cmd.ExecuteNonQuery();
+                    _db.DeleteEvent(selected.Title, selected.Start);
+                    ZooMessageBox.Show($"Das Event '{selected.Title}' wurde erfolgreich gelöscht.", "Erfolg");
+                    LoadData();
+                    
+                    // UI zurücksetzen
+                    EventDetailsArea.Visibility = Visibility.Collapsed;
                 }
-                ZooMessageBox.Show("Event wurde abgesagt und gelöscht.", "Info");
-                LoadData();
+                catch (System.Exception ex)
+                {
+                    ZooMessageBox.Show("Fehler beim Löschen: " + ex.Message, "Datenbankfehler");
+                }
+            }
+            else
+            {
+                ZooMessageBox.Show("Bitte wählen Sie zuerst ein Event aus der Liste aus.", "Hinweis");
             }
         }
     }

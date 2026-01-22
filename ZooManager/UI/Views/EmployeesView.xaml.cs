@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
@@ -14,10 +15,11 @@ namespace ZooManager.UI.Views
         private List<Species> _allSpecies;
         private SqlitePersistenceService _db;
 
-        public EmployeesView()
+        public EmployeesView(IPersistenceService persistenceService = null)
         {
             InitializeComponent();
-            _db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
+            _db = persistenceService as SqlitePersistenceService ?? 
+                  new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             LoadData();
         }
 
@@ -66,8 +68,12 @@ namespace ZooManager.UI.Views
         {
             if (string.IsNullOrWhiteSpace(NewEmpLastName.Text)) return;
 
+            var existingEmployees = _db.LoadEmployees().ToList();
+            int newId = existingEmployees.Any() ? existingEmployees.Max(emp => emp.Id) + 1 : 1;
+
             var newEmp = new Employee 
             { 
+                Id = newId,
                 FirstName = NewEmpFirstName.Text, 
                 LastName = NewEmpLastName.Text 
             };
@@ -82,15 +88,23 @@ namespace ZooManager.UI.Views
         {
             if (EmployeesList.SelectedItem is Employee selected)
             {
-                using (var conn = new MySql.Data.MySqlClient.MySqlConnection(DatabaseConfig.GetConnectionString()))
+                try
                 {
-                    conn.Open();
-                    var cmd = new MySql.Data.MySqlClient.MySqlCommand("DELETE FROM Employees WHERE Id = @id", conn);
-                    cmd.Parameters.AddWithValue("@id", selected.Id);
-                    cmd.ExecuteNonQuery();
+                    _db.DeleteEmployee(selected.Id);
+                    ZooMessageBox.Show("Mitarbeiter und zugehörige Qualifikationen wurden gelöscht.", "Personalverwaltung");
+                    LoadData();
+                    
+                    // UI zurücksetzen
+                    EmployeeDetailsArea.Visibility = Visibility.Collapsed;
                 }
-                ZooMessageBox.Show("Mitarbeiter gelöscht.", "Info");
-                LoadData();
+                catch (System.Exception ex)
+                {
+                    ZooMessageBox.Show($"Fehler beim Löschen: {ex.Message}", "Datenbankfehler");
+                }
+            }
+            else
+            {
+                ZooMessageBox.Show("Bitte wählen Sie zuerst einen Mitarbeiter aus der Liste aus.", "Hinweis");
             }
         }
 
@@ -99,17 +113,12 @@ namespace ZooManager.UI.Views
             if (EmployeesList.SelectedItem is Employee selectedEmployee && 
                 sender is CheckBox cb && cb.DataContext is SpeciesQualification qual)
             {
-                // Update im lokalen Objekt
                 if (cb.IsChecked == true)
                     selectedEmployee.QualifiedSpeciesIds.Add(qual.SpeciesId);
                 else
                     selectedEmployee.QualifiedSpeciesIds.Remove(qual.SpeciesId);
 
-                // ANF3: Sofort in DB persistieren
                 _db.SaveEmployeeQualifications(selectedEmployee.Id, selectedEmployee.QualifiedSpeciesIds);
-                
-                // Professionelle Rückmeldung
-                // ZooMessageBox.Show($"Qualifikation für {qual.SpeciesName} aktualisiert.", "Personalverwaltung");
             }
         }
     }
