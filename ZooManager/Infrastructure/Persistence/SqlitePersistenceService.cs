@@ -25,13 +25,11 @@ namespace ZooManager.Infrastructure.Persistence
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
-                
-                // DIESE ZEILE IST ENTSCHEIDEND:
+
                 var pragmaCmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection);
                 pragmaCmd.ExecuteNonQuery();
 
                 var cmd = connection.CreateCommand();
-                // 1. Tabellen erstellen (wie gehabt)
                 cmd.CommandText = @"
         CREATE TABLE IF NOT EXISTS Species (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, RequiredClimate TEXT, NeedsWater INTEGER, MinSpacePerAnimal REAL);
         CREATE TABLE IF NOT EXISTS Enclosures (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, ClimateType TEXT, HasWaterAccess INTEGER, TotalArea REAL, MaxCapacity INTEGER);
@@ -56,8 +54,7 @@ namespace ZooManager.Infrastructure.Persistence
         CREATE TABLE IF NOT EXISTS AnimalAttributes (AnimalId INTEGER, FieldDefinitionId INTEGER, ValueText TEXT, PRIMARY KEY(AnimalId, FieldDefinitionId));
     ";
                 cmd.ExecuteNonQuery();
-
-                // 2. Testdaten nur einfügen, wenn die Tabellen noch leer sind
+                
                 var checkCmd = new SqliteCommand("SELECT COUNT(*) FROM Species", connection);
                 long count = (long)checkCmd.ExecuteScalar();
 
@@ -70,14 +67,39 @@ namespace ZooManager.Infrastructure.Persistence
 
                         INSERT INTO Enclosures (Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) VALUES ('Savanne A1', 'Trocken', 1, 500.0, 5);
                         INSERT INTO Enclosures (Name, ClimateType, HasWaterAccess, TotalArea, MaxCapacity) VALUES ('Eishalle', 'Polar', 1, 200.0, 20);
-
-                        INSERT INTO Animals (Name, SpeciesId, EnclosureId, NextFeedingTime) VALUES ('Simba', 1, 1, datetime('now'));
-                        INSERT INTO Animals (Name, SpeciesId, EnclosureId, NextFeedingTime) VALUES ('Pingu', 2, 2, datetime('now'));
-
-                        INSERT INTO Employees (FirstName, LastName) VALUES ('Max', 'Mustermann');
-                        INSERT INTO EmployeeQualifications (EmployeeId, SpeciesId) VALUES (1, 1);
                     ";
                     insertCmd.ExecuteNonQuery();
+                    
+                    var speciesCmd = new SqliteCommand("SELECT Id FROM Species ORDER BY Id LIMIT 2", connection);
+                    var enclosureCmd = new SqliteCommand("SELECT Id FROM Enclosures ORDER BY Id LIMIT 2", connection);
+                    
+                    var speciesIds = new List<int>();
+                    var enclosureIds = new List<int>();
+                    
+                    using (var reader = speciesCmd.ExecuteReader())
+                    {
+                        while (reader.Read()) speciesIds.Add(reader.GetInt32(0));
+                    }
+                    
+                    using (var reader = enclosureCmd.ExecuteReader())
+                    {
+                        while (reader.Read()) enclosureIds.Add(reader.GetInt32(0));
+                    }
+                    
+                    var animalCmd = connection.CreateCommand();
+                    animalCmd.CommandText = $@"
+                        INSERT INTO Animals (Name, SpeciesId, EnclosureId, NextFeedingTime) VALUES ('Simba', {speciesIds[0]}, {enclosureIds[0]}, datetime('now'));
+                        INSERT INTO Animals (Name, SpeciesId, EnclosureId, NextFeedingTime) VALUES ('Pingu', {speciesIds[1]}, {enclosureIds[1]}, datetime('now'));
+
+                        INSERT INTO Employees (FirstName, LastName) VALUES ('Max', 'Mustermann');
+                    ";
+                    animalCmd.ExecuteNonQuery();
+
+                    var empCmd = new SqliteCommand("SELECT Id FROM Employees ORDER BY Id LIMIT 1", connection);
+                    var employeeId = (int)(long)empCmd.ExecuteScalar();
+                    
+                    var qualCmd = new SqliteCommand($"INSERT INTO EmployeeQualifications (EmployeeId, SpeciesId) VALUES ({employeeId}, {speciesIds[0]})", connection);
+                    qualCmd.ExecuteNonQuery();
                 }
             }
         }
