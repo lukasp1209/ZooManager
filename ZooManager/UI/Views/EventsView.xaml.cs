@@ -11,12 +11,12 @@ namespace ZooManager.UI.Views
 {
     public partial class EventsView : UserControl
     {
-        private MySqlPersistenceService _db;
+        private SqlitePersistenceService _db;
 
         public EventsView()
         {
             InitializeComponent();
-            _db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            _db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             
             // Zeit-Selektoren füllen
             for (int i = 0; i < 24; i++) HourSelector.Items.Add(i.ToString("D2"));

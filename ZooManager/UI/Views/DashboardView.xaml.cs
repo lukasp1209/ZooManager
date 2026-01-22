@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Windows.Controls;
+using ZooManager.Core.Interfaces;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
 
@@ -7,16 +8,16 @@ namespace ZooManager.UI.Views
 {
     public partial class DashboardView : UserControl
     {
-        public DashboardView()
+        private readonly IPersistenceService _db;
+        public DashboardView(IPersistenceService persistenceService)
         {
+            _db = persistenceService;
             InitializeComponent();
-            LoadDashboardStats();
+            LoadDashboardStats(new SqlitePersistenceService("zoo.db"));
         }
 
-        private void LoadDashboardStats()
+        private void LoadDashboardStats(SqlitePersistenceService db)
         {
-            var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
-            
             var allAnimals = db.LoadAnimals().ToList();
             var allEnclosures = db.LoadEnclosures().ToList();
             var allEmployees = db.LoadEmployees().ToList();

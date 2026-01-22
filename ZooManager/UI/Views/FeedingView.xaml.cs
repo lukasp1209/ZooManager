@@ -12,12 +12,12 @@ namespace ZooManager.UI.Views
 {
     public partial class FeedingView : UserControl
     {
-        private MySqlPersistenceService _db;
+        private SqlitePersistenceService _db;
 
         public FeedingView()
         {
             InitializeComponent();
-            _db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            _db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             
             for (int i = 0; i < 24; i++) EditFeedingHour.Items.Add(i.ToString("D2"));
             for (int i = 0; i < 60; i += 5) EditFeedingMinute.Items.Add(i.ToString("D2"));

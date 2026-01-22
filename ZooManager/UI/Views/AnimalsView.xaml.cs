@@ -22,7 +22,7 @@ namespace ZooManager.UI.Views
 
         private void LoadData()
         {
-            var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             var animals = db.LoadAnimals().ToList();
             AnimalsList.ItemsSource = animals;
             
@@ -73,7 +73,7 @@ namespace ZooManager.UI.Views
             int minute = int.Parse(FeedingMinuteSelector.SelectedItem?.ToString() ?? "0");
             System.DateTime combinedFeedingTime = new System.DateTime(date.Year, date.Month, date.Day, hour, minute, 0);
 
-            var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             var newAnimal = new Core.Models.Animal
             {
                 Name = NewAnimalName.Text,
@@ -93,12 +93,12 @@ namespace ZooManager.UI.Views
         {
             if (AnimalsList.SelectedItem is Core.Models.Animal selected)
             {
-                var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+                var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
                 
-                using (var conn = new MySql.Data.MySqlClient.MySqlConnection(DatabaseConfig.GetConnectionString()))
+                using (var conn = new Microsoft.Data.Sqlite.SqliteConnection(DatabaseConfig.GetConnectionString()))
                 {
                     conn.Open();
-                    var cmd = new MySql.Data.MySqlClient.MySqlCommand("DELETE FROM Animals WHERE Id = @id", conn);
+                    var cmd = new Microsoft.Data.Sqlite.SqliteCommand("DELETE FROM Animals WHERE Id = @id", conn);
                     cmd.Parameters.AddWithValue("@id", selected.Id);
                     cmd.ExecuteNonQuery();
                 }
@@ -127,7 +127,7 @@ namespace ZooManager.UI.Views
                     Description = NewEventDesc.Text
                 };
 
-                var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+                var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
                 db.AddAnimalEvent(selectedAnimal.Id, newEvent);
                 
                 selectedAnimal.Events.Add(newEvent);

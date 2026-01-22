@@ -24,7 +24,7 @@ namespace ZooManager.UI.Views
 
         private void LoadData()
         {
-            var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             _enclosures = db.LoadEnclosures().ToList();
             _allAnimals = db.LoadAnimals().ToList();
             _species = db.LoadSpecies().ToList();
@@ -64,7 +64,7 @@ namespace ZooManager.UI.Views
                 else
                 {
                     string reason = _validator.GetIncompatibilityReason(selectedAnimal, species, selectedEnclosure, currentCount);
-                    ZooMessageBox.Show(reason, "Validierungsfehler (ANF2)");
+                    ZooMessageBox.Show(reason, "Validierungsfehler");
                 }
             }
         }
@@ -92,7 +92,7 @@ namespace ZooManager.UI.Views
                 return;
             }
 
-            var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             var newEnc = new Enclosure
             {
                 Name = NewEnclosureName.Text,

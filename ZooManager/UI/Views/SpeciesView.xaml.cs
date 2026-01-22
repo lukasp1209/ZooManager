@@ -18,7 +18,7 @@ namespace ZooManager.UI.Views
 
         private void LoadData()
         {
-            var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             SpeciesList.ItemsSource = db.LoadSpecies().ToList();
         }
 
@@ -55,7 +55,7 @@ namespace ZooManager.UI.Views
         {
             if (string.IsNullOrWhiteSpace(NewSpeciesName.Text)) return;
 
-            var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             var newSpecies = new Species
             {
                 Name = NewSpeciesName.Text,
@@ -73,7 +73,7 @@ namespace ZooManager.UI.Views
         {
             if (SpeciesList.SelectedItem is Species selected)
             {
-                var db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+                var db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
                 // Prüfen, ob noch Tiere dieser Art existieren
                 if (db.LoadAnimals().Any(a => a.SpeciesId == selected.Id))
                 {

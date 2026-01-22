@@ -1,38 +1,46 @@
-﻿# Zoo Manager Professional
+﻿# 🐾 ZooManager
 
-Eine moderne WPF-Anwendung zur Verwaltung von Zoo-Beständen, Gehegen und Personal, entwickelt mit .NET 8.0 und MySQL.
+Der ZooManager ist eine moderne WPF-Anwendung zur effizienten Verwaltung von Tierbeständen, Gehegen und Mitarbeiterqualifikationen. Das System wurde speziell für eine einfache Weitergabe entwickelt: **Es ist keine Datenbankinstallation (MySQL/SQL-Server) erforderlich.**
 
-## Voraussetzungen
+## 🚀 Features
 
-*   **Visual Studio 2022** (mit installierter Workload "Desktopentwicklung mit .NET")
-*   **MySQL Server** (lokal installiert, z. B. über XAMPP oder MySQL Installer)
-*   **.NET 8.0 SDK**
+- **Dashboard:** Echtzeit-Statistiken über den Tierbestand, anstehende Fütterungen und Zoo-Events.
+- **Digitale Tierakte:** Vollständige Chronologie von Ereignissen (Tierarztbesuche, Transporte) pro Tier.
+- **Intelligente Gehege-Validierung:** Beim Anlegen von Tieren werden automatisch nur Gehege vorgeschlagen, die zum benötigten Klima und Wasserbedarf der Tierart passen.
+- **Mitarbeiterverwaltung:** Management von Qualifikationen für spezifische Tierarten.
+- **Dynamische Attribute:** Unterstützung für tierartspezifische Zusatzfelder.
 
-## Einrichtung
+## 🛠 Technik-Stack
 
-### 1. Datenbank vorbereiten
-Bevor die Anwendung gestartet werden kann, muss die Datenbankstruktur angelegt werden:
-1.  Öffnen Sie Ihr MySQL-Verwaltungstool (z. B. MySQL Workbench oder Rider Database Tab).
-2.  Führen Sie das beiliegende SQL-Skript `ZooManager_Setup.sql` aus.
-    *   Dies erstellt die Datenbank `ZooManagerDB`.
-    *   Es legt alle benötigten Tabellen (Animals, Species, Enclosures, Employees, etc.) an.
-    *   Es fügt erste Testdaten hinzu.
+- **Framework:** .NET 8.0 (WPF)
+- **Sprache:** C# 12.0
+- **Datenbank:** SQLite (Lauffähig ohne zusätzliche Installation)
+- **Architektur:** Interface-basierte Persistence-Layer (IPersistenceService)
 
-### 2. Konfiguration anpassen
-Passen Sie die Verbindungseinstellungen an Ihre lokale MySQL-Installation an:
-1.  Öffnen Sie die Datei `App.config` im Hauptverzeichnis des Projekts.
-2.  Ändern Sie im Bereich `<connectionStrings>` das Passwort (`Pwd=...`) und ggf. den Benutzernamen (`Uid=...`), falls dieser nicht `root` ist.
+## 📦 Installation & Start
 
-### 3. Projekt starten
-1.  Öffnen Sie die Datei `ZooManager.sln` mit Visual Studio 2022.
-2.  Visual Studio wird die benötigten NuGet-Pakete (z. B. `MySql.Data`) automatisch wiederherstellen.
-3.  Drücken Sie **F5** oder den Start-Button, um die Anwendung zu starten.
+Da das Projekt **SQLite** verwendet, ist der Start extrem einfach:
 
-## Umgesetzte Anforderungen
+1. **Repository klonen** oder ZIP-Archiv entpacken.
+2. Das Projekt in **JetBrains Rider** oder Visual Studio öffnen.
+3. **NuGet-Pakete wiederherstellen**.
+4. Das Projekt starten.
 
-*   **ANF1 (Digitale Akte):** Chronologische Erfassung von Ereignissen pro Tier.
-*   **ANF2 (Anlagen-Planung):** Validierung von Klima, Platz und Wasserzugang bei der Tierzuordnung.
-*   **ANF3 (Personal):** Verwaltung von Mitarbeiter-Qualifikationen für bestimmte Tierarten.
-*   **ANF4 (Dynamische Felder):** Frei konfigurierbare Zusatzfelder für jede Tierart.
-*   **Dashboard:** Echtzeit-Statistiken und Fütterungsvorschau.
-*   **Fütterungsplan:** Täglicher 24h-Rhythmus für die Tierversorgung.
+> [!NOTE]
+> Beim allerersten Start erstellt die Anwendung automatisch eine Datei namens `zoo.db` im Programmverzeichnis. Diese enthält bereits einige Testdaten (Löwen, Pinguine), damit das System sofort erkundet werden kann.
+
+## 📂 Projektstruktur
+
+- **`ZooManager.Core`**: Enthält die Business-Logik und die Datenmodelle (`Animal`, `Species`, `Enclosure`).
+- **`ZooManager.Infrastructure`**: Beinhaltet den `SqlitePersistenceService`. Hier liegt die Logik für die automatische Datenbank-Initialisierung.
+- **`ZooManager.UI`**: Die Benutzeroberfläche bestehend aus modernen UserControls und Styles.
+
+## 💡 Portabilität (JSON/SQL)
+
+Dank der interface-basierten Architektur kann das System jederzeit umgestellt werden:
+
+- Aktuell wird **SQLite** für volle SQL-Power ohne Server genutzt.
+- Ein Umstieg auf **JSON**-Dateien ist durch Implementierung eines neuen `IPersistenceService` möglich.
+
+---
+Entwickelt für moderne Zooverwaltung – Einfach kopieren, starten und loslegen! 🦁🐧

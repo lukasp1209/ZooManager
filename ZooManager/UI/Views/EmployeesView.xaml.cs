@@ -12,12 +12,12 @@ namespace ZooManager.UI.Views
     {
         private List<Employee> _employees;
         private List<Species> _allSpecies;
-        private MySqlPersistenceService _db;
+        private SqlitePersistenceService _db;
 
         public EmployeesView()
         {
             InitializeComponent();
-            _db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            _db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
             LoadData();
         }
 

@@ -10,12 +10,12 @@ namespace ZooManager.UI.Views
 {
     public partial class ReportsView : UserControl
     {
-        private MySqlPersistenceService _db;
+        private SqlitePersistenceService _db;
 
         public ReportsView()
         {
             InitializeComponent();
-            _db = new MySqlPersistenceService(DatabaseConfig.GetConnectionString());
+            _db = new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
         }
 
         private void ReportTypeList_SelectionChanged(object sender, SelectionChangedEventArgs e)

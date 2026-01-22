@@ -1,40 +1,23 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
+using ZooManager.Infrastructure.Persistence;
 
 namespace ZooManager.UI.Views
 {
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(IPersistenceService persistenceService)
         {
             InitializeComponent();
-            MainContentPresenter.Content = new DashboardView();
+            _persistenceService = persistenceService;
+            
+            MainContentPresenter.Content = new DashboardView(_persistenceService);
         }
         
-
-        private void TestData()
-        {
-            try 
-            {
-                var db = new ZooManager.Infrastructure.Persistence.MySqlPersistenceService(
-                    ZooManager.Infrastructure.Configuration.DatabaseConfig.GetConnectionString());
-                
-                var animals = db.LoadAnimals();
-                foreach (var a in animals)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Gefundenes Tier: {a.Name}");
-                    if (a.Attributes.ContainsKey("Mähnenfarbe"))
-                        System.Diagnostics.Debug.WriteLine($" - Attribut: {a.Attributes["Mähnenfarbe"]}");
-                }
-            }
-                catch (Exception ex)
-                {
-                    ZooMessageBox.Show("Datenbankfehler: " + ex.Message, "Fehler beim Laden");
-                }
-
-        }
+        private readonly IPersistenceService _persistenceService;
 
         private void NavButton_Click(object sender, RoutedEventArgs e)
         {
@@ -45,7 +28,7 @@ namespace ZooManager.UI.Views
                 switch (target)
                 {
                     case "Dashboard":
-                        MainContentPresenter.Content = new DashboardView();
+                        MainContentPresenter.Content = new DashboardView(persistenceService: new SqlitePersistenceService());
                         break;
                     case "FeedingPlan":
                         MainContentPresenter.Content = new FeedingView();
