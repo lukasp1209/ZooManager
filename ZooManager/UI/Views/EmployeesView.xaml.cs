@@ -17,11 +17,16 @@ namespace ZooManager.UI.Views
         private IPersistenceService _persistenceService;
         private IAuthenticationService _authService;
 
-        public EmployeesView(IPersistenceService persistenceService, IAuthenticationService _authService)
+        public EmployeesView(IPersistenceService persistenceService, IAuthenticationService authService)
         {
             InitializeComponent();
-            _db = persistenceService as SqlitePersistenceService ?? 
+
+            _persistenceService = persistenceService;
+            _authService = authService;
+
+            _db = persistenceService as SqlitePersistenceService ??
                   new SqlitePersistenceService(DatabaseConfig.GetConnectionString());
+
             LoadData();
         }
 
@@ -37,7 +42,7 @@ namespace ZooManager.UI.Views
             if (EmployeesList.SelectedItem is Employee selectedEmployee)
             {
                 SelectedEmployeeTitle.Text = $"{selectedEmployee.FirstName} {selectedEmployee.LastName}";
-                
+
                 var qualifications = _allSpecies.Select(s => new SpeciesQualification
                 {
                     SpeciesId = s.Id,
@@ -46,7 +51,7 @@ namespace ZooManager.UI.Views
                 }).ToList();
 
                 QualificationList.ItemsSource = qualifications;
-                
+
                 EmployeeDetailsArea.Visibility = Visibility.Visible;
                 EmployeeEditorArea.Visibility = Visibility.Collapsed;
             }
@@ -66,7 +71,7 @@ namespace ZooManager.UI.Views
             EmployeeDetailsArea.Visibility = Visibility.Visible;
         }
 
-       private void SaveNewEmployee_Click(object sender, RoutedEventArgs e)
+        private void SaveNewEmployee_Click(object sender, RoutedEventArgs e)
         {
             var role = _authService.GetCurrentUser()?.Role;
             if (role == UserRole.Employee)
@@ -131,7 +136,7 @@ namespace ZooManager.UI.Views
                     _db.DeleteEmployee(selected.Id);
                     ZooMessageBox.Show("Mitarbeiter und zugehörige Qualifikationen wurden gelöscht.", "Personalverwaltung");
                     LoadData();
-      
+
                     EmployeeDetailsArea.Visibility = Visibility.Collapsed;
                 }
                 catch (System.Exception ex)
@@ -147,7 +152,7 @@ namespace ZooManager.UI.Views
 
         private void QualificationCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            if (EmployeesList.SelectedItem is Employee selectedEmployee && 
+            if (EmployeesList.SelectedItem is Employee selectedEmployee &&
                 sender is CheckBox cb && cb.DataContext is SpeciesQualification qual)
             {
                 if (cb.IsChecked == true)

@@ -100,7 +100,7 @@ namespace ZooManager.UI.Views
                 int m = int.Parse(EditFeedingMinute.SelectedItem.ToString());
             
                 animal.NextFeedingTime = new DateTime(date.Year, date.Month, date.Day, h, m, 0);
-                _db.SaveAnimals(new List<Animal> { animal });
+                _persistenceService.SaveAnimals(new List<Animal> { animal });
             
                 ZooMessageBox.Show("Fütterungszeit wurde manuell angepasst.", "Planer");
                 LoadPlan();

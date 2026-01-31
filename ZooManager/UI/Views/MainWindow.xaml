@@ -32,7 +32,6 @@
                             Orientation="Horizontal"
                                 VerticalAlignment="Center">
 
-                        <!-- User Chip (passt zum Layout) -->
                         <Border Background="#26FFFFFF"
                                 CornerRadius="10"
                                 Padding="12,8"

@@ -20,10 +20,20 @@ namespace ZooManager.UI.Views
             _persistenceService = persistenceService;
             _authService = authService;
 
+            // Uhrzeit-Selectoren initialisieren (fehlte)
+            FeedingHourSelector.Items.Clear();
+            FeedingMinuteSelector.Items.Clear();
+
+            for (int i = 0; i < 24; i++)
+                FeedingHourSelector.Items.Add(i.ToString("D2"));
+
+            for (int i = 0; i < 60; i += 5)
+                FeedingMinuteSelector.Items.Add(i.ToString("D2"));
+
             LoadData();
             ApplyPermissions();
         }
-        
+
         private void ApplyPermissions()
         {
             var role = _authService.GetCurrentUser()?.Role;
@@ -48,7 +58,12 @@ namespace ZooManager.UI.Views
                 EnclosureSelector.ItemsSource = _persistenceService.LoadEnclosures().ToList();
             }
 
+            // Defaultwerte für neue Eingaben setzen
             NewEventDate.SelectedDate = DateTime.Now;
+
+            NewAnimalFeedingDate.SelectedDate = DateTime.Today;
+            FeedingHourSelector.SelectedItem = DateTime.Now.Hour.ToString("D2");
+            FeedingMinuteSelector.SelectedItem = ((DateTime.Now.Minute / 5) * 5).ToString("D2");
         }
 
         private void AnimalsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
