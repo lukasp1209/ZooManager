@@ -13,8 +13,9 @@ namespace ZooManager.UI.Views
     public partial class EventsView : UserControl
     {
         private SqlitePersistenceService _db;
+        private readonly IAuthenticationService  authService;
 
-        public EventsView(IPersistenceService persistenceService = null)
+        public EventsView(IPersistenceService persistenceService,  IAuthenticationService authService)
         {
             InitializeComponent();
             _db = persistenceService as SqlitePersistenceService ?? 

@@ -47,7 +47,7 @@
                     </Grid>
 
                     <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                        <Button Content="Uhrzeit speichern" Padding="20,10" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold" Click="SaveFeedingTime_Click"/>
+                        <Button x:Name="SaveFeedingTime" Content="Uhrzeit speichern" Padding="20,10" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold" Click="SaveFeedingTime_Click"/>
                         <Button Content="Jetzt gefüttert (+24h)" Margin="12,0,0,0" Padding="20,10" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" Click="FeedingDone_Click"/>
                     </StackPanel>
                     

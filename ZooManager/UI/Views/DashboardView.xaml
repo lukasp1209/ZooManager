@@ -8,27 +8,31 @@
     <StackPanel Margin="24">
         <TextBlock Text="Dashboard" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextMainBrush}"/>
         <UniformGrid Columns="3" Margin="0,24,0,0">
+
             <Border Style="{StaticResource Card}">
                 <StackPanel>
                     <TextBlock Text="Tiere" Foreground="{StaticResource TextMutedBrush}"/>
                     <TextBlock x:Name="TotalAnimalsText" Text="0" FontSize="32" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
-            <Border Style="{StaticResource Card}">
+
+            <Border x:Name="EnclosuresCard" Style="{StaticResource Card}">
                 <StackPanel>
                     <TextBlock Text="Gehege" Foreground="{StaticResource TextMutedBrush}"/>
                     <TextBlock x:Name="TotalEnclosuresText" Text="0" FontSize="32" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
-            <Border Style="{StaticResource Card}">
+
+            <Border x:Name="EmployeesCard" Style="{StaticResource Card}">
                 <StackPanel>
                     <TextBlock Text="Mitarbeiter" Foreground="{StaticResource TextMutedBrush}"/>
                     <TextBlock x:Name="TotalEmployeesText" Text="0" FontSize="32" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
+
         </UniformGrid>
         <!-- FEEDING PREVIEW -->
-        <Border Style="{StaticResource Card}" Margin="0,24,0,0">
+        <Border x:Name="FeedingPreviewCard" Style="{StaticResource Card}" Margin="0,24,0,0" Visibility="Visible">
             <StackPanel>
                 <Grid Margin="0,0,0,15">
                     <TextBlock Text="Nächste Fütterungen" FontSize="18" FontWeight="SemiBold"/>
@@ -51,28 +55,41 @@
             </StackPanel>
         </Border>
 
-            <!-- EVENTS PREVIEW (Neu) -->
-            <Border Style="{StaticResource Card}" Margin="0,24,0,0">
-                <StackPanel>
-                    <Grid Margin="0,0,0,15">
-                        <TextBlock Text="Zoo Veranstaltungen" FontSize="18" FontWeight="SemiBold"/>
-                        <Button Content="Alle Events" HorizontalAlignment="Right" Style="{StaticResource NavButton}" Click="OpenEvents_Click"/>
-                    </Grid>
+<!-- EVENTS PREVIEW -->
+        <Border x:Name="EventsPreviewCard" Style="{StaticResource Card}" Margin="0,24,0,0">
+            <StackPanel>
+                <Grid Margin="0,0,0,15">
+                    <TextBlock Text="Anstehende Veranstaltungen" FontSize="18" FontWeight="SemiBold"/>
+                    <Button Content="Alle Events ansehen"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource NavButton}"
+                            Click="OpenEvents_Click"/>
+                </Grid>
 
-                    <ItemsControl x:Name="EventsPreviewList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="0,10">
-                                    <DockPanel>
-                                        <TextBlock Text="{Binding Start, StringFormat='\{0:ddd, dd.MM. HH:mm\}'}" FontWeight="Bold" Width="130" Foreground="{StaticResource AccentBrush}"/>
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Margin="10,0"/>
-                                        <TextBlock Text="Öffentlich" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right"/>
-                                    </DockPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
+                <ItemsControl x:Name="EventsPreviewList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="0,10">
+                                <DockPanel>
+                                    <TextBlock Text="{Binding Start, StringFormat='\{0:ddd, dd.MM. HH:mm\} Uhr'}"
+                                               FontWeight="Bold"
+                                               Width="160"
+                                               Foreground="{StaticResource AccentBrush}"/>
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Margin="10,0"/>
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+        <!-- Optional: Platzhalter, falls keine Events vorhanden -->
+        <TextBlock x:Name="NoEventsText"
+                   Text="Keine anstehenden Veranstaltungen."
+                   Foreground="{StaticResource TextMutedBrush}"
+                   Margin="0,8,0,0"
+                   Visibility="Collapsed"/>
+    </StackPanel>
+</Border>
+
         </StackPanel>
     </UserControl>

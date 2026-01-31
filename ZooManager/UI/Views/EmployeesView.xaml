@@ -66,7 +66,17 @@
                     <TextBox x:Name="NewEmpFirstName" Margin="0,0,0,12" Padding="8"/>
 
                     <Label Content="Nachname:"/>
-                    <TextBox x:Name="NewEmpLastName" Margin="0,0,0,24" Padding="8"/>
+                    <TextBox x:Name="NewEmpLastName" Margin="0,0,0,16" Padding="8"/>
+
+                    <Separator Margin="0,8,0,16"/>
+
+                    <TextBlock Text="Login für Mitarbeiter" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                    <Label Content="Benutzername (Login):"/>
+                    <TextBox x:Name="NewEmpUsername" Margin="0,0,0,12" Padding="8"/>
+
+                    <Label Content="Passwort:"/>
+                    <PasswordBox x:Name="NewEmpPassword" Margin="0,0,0,24" Padding="8"/>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEmployeeEditor_Click"/>
