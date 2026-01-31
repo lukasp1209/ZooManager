@@ -1,46 +1,51 @@
-﻿# 🐾 ZooManager
+﻿# ZooManager
 
-Der ZooManager ist eine moderne WPF-Anwendung zur effizienten Verwaltung von Tierbeständen, Gehegen und Mitarbeiterqualifikationen. Das System wurde speziell für eine einfache Weitergabe entwickelt: **Es ist keine Datenbankinstallation (MySQL/SQL-Server) erforderlich.**
+ZooManager ist eine moderne WPF-Anwendung zur effizienten Verwaltung von Tierbeständen, Gehegen und Mitarbeiterqualifikationen. Das System ist auf einfache Weitergabe ausgelegt: **Es ist keine separate Datenbankinstallation (z. B. MySQL/SQL Server) erforderlich.**
 
-## 🚀 Features
+## Funktionen
 
-- **Dashboard:** Echtzeit-Statistiken über den Tierbestand, anstehende Fütterungen und Zoo-Events.
-- **Digitale Tierakte:** Vollständige Chronologie von Ereignissen (Tierarztbesuche, Transporte) pro Tier.
-- **Intelligente Gehege-Validierung:** Beim Anlegen von Tieren werden automatisch nur Gehege vorgeschlagen, die zum benötigten Klima und Wasserbedarf der Tierart passen.
-- **Mitarbeiterverwaltung:** Management von Qualifikationen für spezifische Tierarten.
-- **Dynamische Attribute:** Unterstützung für tierartspezifische Zusatzfelder.
+- **Dashboard:** Statistiken zu Tierbestand, anstehenden Fütterungen und Zoo-Events.
+- **Digitale Tierakte:** Chronologie von Ereignissen (z. B. Tierarztbesuche, Transporte) pro Tier.
+- **Gehege-Validierung:** Beim Anlegen von Tieren werden automatisch nur passende Gehege (Klima/Wasserbedarf der Tierart) vorgeschlagen.
+- **Mitarbeiterverwaltung:** Verwaltung von Qualifikationen für spezifische Tierarten.
+- **Dynamische Attribute:** Unterstützung tierartspezifischer Zusatzfelder.
 
-## 🛠 Technik-Stack
+## Technik-Stack
 
 - **Framework:** .NET 8.0 (WPF)
 - **Sprache:** C# 12.0
-- **Datenbank:** SQLite (Lauffähig ohne zusätzliche Installation)
-- **Architektur:** Interface-basierte Persistence-Layer (IPersistenceService)
+- **Datenhaltung:** SQLite (lauffähig ohne zusätzliche Installation)
+- **Architektur:** Interface-basierter Persistence-Layer (`IPersistenceService`)
 
-## 📦 Installation & Start
+## Installation & Start
 
-Da das Projekt **SQLite** verwendet, ist der Start extrem einfach:
-
-1. **Repository klonen** oder ZIP-Archiv entpacken.
-2. Das Projekt in **JetBrains Rider** oder Visual Studio öffnen.
+1. Repository klonen oder ZIP-Archiv entpacken.
+2. Projekt in **JetBrains Rider** oder Visual Studio öffnen.
 3. **NuGet-Pakete wiederherstellen**.
-4. Das Projekt starten.
+4. Projekt starten.
 
 > [!NOTE]
-> Beim allerersten Start erstellt die Anwendung automatisch eine Datei namens `zoo.db` im Programmverzeichnis. Diese enthält bereits einige Testdaten (Löwen, Pinguine), damit das System sofort erkundet werden kann.
+> Beim ersten Start erstellt die Anwendung automatisch eine Datei `zoo.db` im Programmverzeichnis. Diese enthält bereits Testdaten, sodass die Anwendung sofort ausprobiert werden kann.
 
-## 📂 Projektstruktur
+## Anmeldung (Demo-Zugangsdaten)
 
-- **`ZooManager.Core`**: Enthält die Business-Logik und die Datenmodelle (`Animal`, `Species`, `Enclosure`).
-- **`ZooManager.Infrastructure`**: Beinhaltet den `SqlitePersistenceService`. Hier liegt die Logik für die automatische Datenbank-Initialisierung.
-- **`ZooManager.UI`**: Die Benutzeroberfläche bestehend aus modernen UserControls und Styles.
+Für die Anmeldung stehen Beispielbenutzer zur Verfügung:
 
-## 💡 Portabilität (JSON/SQL)
+- **Manager-Login:** `manager` → `password`
+- **Mitarbeiter-Login (Beispiel):** `max.mustermann` → `password`
 
-Dank der interface-basierten Architektur kann das System jederzeit umgestellt werden:
+> [!TIP]
+> Falls die Demo-Zugangsdaten nicht funktionieren, die Anwendung einmal neu starten bzw. prüfen, ob `zoo.db` korrekt erstellt wurde.
 
-- Aktuell wird **SQLite** für volle SQL-Power ohne Server genutzt.
-- Ein Umstieg auf **JSON**-Dateien ist durch Implementierung eines neuen `IPersistenceService` möglich.
+## Projektstruktur
 
----
-Entwickelt für moderne Zooverwaltung – Einfach kopieren, starten und loslegen! 🦁🐧
+- **`ZooManager.Core`**: Business-Logik und Datenmodelle (`Animal`, `Species`, `Enclosure`).
+- **`ZooManager.Infrastructure`**: `SqlitePersistenceService` inkl. Logik zur Datenbank-Initialisierung.
+- **`ZooManager.UI`**: Benutzeroberfläche (UserControls, Styles).
+
+## Portabilität (SQLite/JSON)
+
+Durch die interface-basierte Architektur kann die Datenhaltung flexibel erweitert werden:
+
+- Aktuell: **SQLite** für SQL-Funktionalität ohne Serverbetrieb.
+- Optional: Umstieg auf **JSON** durch Implementierung eines weiteren `IPersistenceService`.

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 using ZooManager.Core.Interfaces;
 
 namespace ZooManager.UI.Views
@@ -13,9 +14,20 @@ namespace ZooManager.UI.Views
             InitializeComponent();
             _authService = authService;
             _persistenceService = persistenceService;
-            
-            UsernameTextBox.KeyDown += (s, e) => { if (e.Key == System.Windows.Input.Key.Enter) LoginButton_Click(null, null); };
-            PasswordBox.KeyDown += (s, e) => { if (e.Key == System.Windows.Input.Key.Enter) LoginButton_Click(null, null); };
+
+            UsernameTextBox.KeyDown += (s, e) => { if (e.Key == Key.Enter) LoginButton_Click(null, null); };
+            PasswordBox.KeyDown += (s, e) => { if (e.Key == Key.Enter) LoginButton_Click(null, null); };
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
         }
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
