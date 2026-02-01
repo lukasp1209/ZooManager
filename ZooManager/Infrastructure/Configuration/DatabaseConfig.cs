@@ -2,7 +2,7 @@
 
 namespace ZooManager.Infrastructure.Configuration
 {
-    public class DatabaseConfig
+    public abstract class DatabaseConfig
     {
         public static string GetConnectionString()
         {

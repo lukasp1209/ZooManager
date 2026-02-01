@@ -6,6 +6,7 @@ using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
+using ZooManager.Infrastructure.Persistence.Connection;
 
 namespace ZooManager.UI.Views
 {
@@ -32,8 +33,6 @@ namespace ZooManager.UI.Views
             {
                 SelectedSpeciesName.Text = selected.Name;
                 SelectedSpeciesClimate.Text = $"Klima: {selected.RequiredClimate} | Min. Platz: {selected.MinSpacePerAnimal}qm";
-                
-                ConfiguredFieldsList.ItemsSource = selected.CustomFields;
                 
                 SpeciesDetailsArea.Visibility = Visibility.Visible;
                 SpeciesEditorArea.Visibility = Visibility.Collapsed;

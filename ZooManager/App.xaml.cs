@@ -2,6 +2,7 @@
 using ZooManager.Infrastructure.Persistence;
 using ZooManager.Core.Interfaces;
 using ZooManager.Infrastructure.Authentication;
+using ZooManager.Infrastructure.Persistence.Connection;
 using ZooManager.UI.Views;
 
 namespace ZooManager
