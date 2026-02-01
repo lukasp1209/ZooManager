@@ -12,7 +12,6 @@ namespace ZooManager
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            
             IPersistenceService persistenceService = new SqlitePersistenceService("zoo.db");
             IAuthenticationService authService = new AuthenticationService(persistenceService);
             
