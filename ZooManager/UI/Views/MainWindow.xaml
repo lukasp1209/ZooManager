@@ -1,11 +1,7 @@
 ﻿<Window x:Class="ZooManager.UI.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Zoo Manager"
-        Width="1200" Height="750"
-        MinWidth="900" MinHeight="600"
-        WindowStartupLocation="CenterScreen"
-        Background="#F4F6F8">
+    WindowState="Maximized">
 
     <!-- ========== LAYOUT ========== -->
     <Grid>
