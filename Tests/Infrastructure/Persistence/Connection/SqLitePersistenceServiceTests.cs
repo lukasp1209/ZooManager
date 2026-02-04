@@ -1,8 +1,12 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using System;
+using System.IO;
+using Microsoft.Data.Sqlite;
+using Microsoft.VisualBasic.ApplicationServices;
 using NUnit.Framework;
 using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 using ZooManager.Infrastructure.Persistence.Connection;
+using User = ZooManager.Core.Models.User;
 
 namespace Tests.Infrastructure.Persistence.Connection;
 
