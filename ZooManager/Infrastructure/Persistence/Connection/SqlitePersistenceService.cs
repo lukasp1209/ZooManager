@@ -303,6 +303,74 @@ namespace ZooManager.Infrastructure.Persistence.Connection
                 }
             }
         }
+        
+        public void DeleteAnimalEvent(int animalId, AnimalEvent ev)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        DELETE FROM AnimalEvents
+                        WHERE AnimalId = $animalId
+                          AND EventDate = $eventDate
+                          AND EventType = $eventType
+                          AND Description = $description";
+
+                    cmd.Parameters.AddWithValue("$animalId", animalId);
+                    cmd.Parameters.AddWithValue("$eventDate", ev.Date.ToString("o"));
+                    cmd.Parameters.AddWithValue("$eventType", ev.Type ?? string.Empty);
+                    cmd.Parameters.AddWithValue("$description", ev.Description ?? string.Empty);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+        public void UpdateAnimalEvent(int animalId, AnimalEvent oldEvent, AnimalEvent newEvent)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+                using (var tx = connection.BeginTransaction())
+                {
+                    using (var deleteCmd = connection.CreateCommand())
+                    {
+                        deleteCmd.Transaction = tx;
+                        deleteCmd.CommandText = @"
+                            DELETE FROM AnimalEvents
+                            WHERE AnimalId = $animalId
+                              AND EventDate = $eventDate
+                              AND EventType = $eventType
+                              AND Description = $description";
+
+                        deleteCmd.Parameters.AddWithValue("$animalId", animalId);
+                        deleteCmd.Parameters.AddWithValue("$eventDate", oldEvent.Date.ToString("o"));
+                        deleteCmd.Parameters.AddWithValue("$eventType", oldEvent.Type ?? string.Empty);
+                        deleteCmd.Parameters.AddWithValue("$description", oldEvent.Description ?? string.Empty);
+
+                        deleteCmd.ExecuteNonQuery();
+                    }
+
+                    using (var insertCmd = connection.CreateCommand())
+                    {
+                        insertCmd.Transaction = tx;
+                        insertCmd.CommandText = @"
+                            INSERT INTO AnimalEvents (AnimalId, EventDate, EventType, Description)
+                            VALUES ($animalId, $eventDate, $eventType, $description)";
+
+                        insertCmd.Parameters.AddWithValue("$animalId", animalId);
+                        insertCmd.Parameters.AddWithValue("$eventDate", newEvent.Date.ToString("o"));
+                        insertCmd.Parameters.AddWithValue("$eventType", newEvent.Type ?? string.Empty);
+                        insertCmd.Parameters.AddWithValue("$description", newEvent.Description ?? string.Empty);
+
+                        insertCmd.ExecuteNonQuery();
+                    }
+
+                    tx.Commit();
+                }
+            }
+        }
 
         public void SaveAnimals(IEnumerable<Animal> animals)
         {

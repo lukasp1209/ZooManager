@@ -13,6 +13,8 @@ namespace ZooManager.UI.Views
     {
         private readonly IPersistenceService? _persistenceService;
         private readonly IAuthenticationService? _authService;
+        
+        private AnimalEvent? _editingEvent;
 
         public AnimalsView(IPersistenceService persistenceService = null, IAuthenticationService authService = null)
         {
@@ -20,7 +22,6 @@ namespace ZooManager.UI.Views
             _persistenceService = persistenceService;
             _authService = authService;
 
-            // Uhrzeit-Selectoren initialisieren (fehlte)
             FeedingHourSelector.Items.Clear();
             FeedingMinuteSelector.Items.Clear();
 
@@ -58,7 +59,6 @@ namespace ZooManager.UI.Views
                 EnclosureSelector.ItemsSource = _persistenceService.LoadEnclosures().ToList();
             }
 
-            // Defaultwerte für neue Eingaben setzen
             NewEventDate.SelectedDate = DateTime.Now;
 
             NewAnimalFeedingDate.SelectedDate = DateTime.Today;
@@ -172,25 +172,117 @@ namespace ZooManager.UI.Views
                 ZooMessageBox.Show("Bitte Datum, Typ und Beschreibung vollständig ausfüllen.", "Eingabe unvollständig");
                 return;
             }
-            
-            var ev = new AnimalEvent
+
+            var newEv = new AnimalEvent
             {
                 Date = NewEventDate.SelectedDate.Value,
                 Type = NewEventType.Text,
                 Description = NewEventDesc.Text
             };
             
-            _persistenceService.AddAnimalEvent(selectedAnimal.Id, ev);
+            if (_editingEvent != null)
+            {
+                _persistenceService.UpdateAnimalEvent(selectedAnimal.Id, _editingEvent, newEv);
+                
+                selectedAnimal.Events.RemoveAll(x => IsSameEvent(x, _editingEvent));
+
+                selectedAnimal.Events.Insert(0, newEv);
+
+                RefreshEventsList(selectedAnimal);
+                ExitEditMode();
+
+                ZooMessageBox.Show("Ereignis wurde aktualisiert.", "Erfolg");
+                return;
+            }
             
-            selectedAnimal.Events.Insert(0, ev);
-            EventsList.ItemsSource = null;
-            EventsList.ItemsSource = selectedAnimal.Events;
+            _persistenceService.AddAnimalEvent(selectedAnimal.Id, newEv);
+
+            selectedAnimal.Events.Insert(0, newEv);
+            RefreshEventsList(selectedAnimal);
 
             NewEventType.Text = "";
             NewEventDesc.Text = "";
             NewEventDate.SelectedDate = DateTime.Now;
 
             ZooMessageBox.Show("Ereignis wurde in der digitalen Akte gespeichert.", "Erfolg");
+        }
+
+        private void EditEvent_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_authService.HasPermission("AddAnimalEvent"))
+            {
+                ZooMessageBox.Show("Sie haben keine Berechtigung, Ereignisse zu bearbeiten.", "Zugriff verweigert");
+                return;
+            }
+
+            if (sender is not Button btn || btn.Tag is not AnimalEvent ev)
+                return;
+
+            _editingEvent = ev;
+
+            EventEditorTitle.Text = "Ereignis bearbeiten";
+            SaveEventBtn.Content = "Änderungen speichern";
+            CancelEditEventBtn.Visibility = Visibility.Visible;
+
+            NewEventDate.SelectedDate = ev.Date;
+            NewEventType.Text = ev.Type;
+            NewEventDesc.Text = ev.Description;
+        }
+        
+        private void CancelEditEvent_Click(object sender, RoutedEventArgs e)
+        {
+            ExitEditMode();
+        }
+
+        private void DeleteEvent_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_authService.HasPermission("AddAnimalEvent"))
+            {
+                ZooMessageBox.Show("Sie haben keine Berechtigung, Ereignisse zu löschen.", "Zugriff verweigert");
+                return;
+            }
+
+            if (AnimalsList.SelectedItem is not Animal selectedAnimal)
+                return;
+
+            if (sender is not Button btn || btn.Tag is not AnimalEvent ev)
+                return;
+
+            _persistenceService.DeleteAnimalEvent(selectedAnimal.Id, ev);
+
+            if (_editingEvent == ev)
+                ExitEditMode();
+
+            selectedAnimal.Events.Remove(ev);
+            RefreshEventsList(selectedAnimal);
+
+            ZooMessageBox.Show("Ereignis wurde gelöscht.", "Gelöscht");
+        }
+
+        private static bool IsSameEvent(AnimalEvent a, AnimalEvent b)
+        {
+            return a.Date == b.Date
+                   && (a.Type ?? string.Empty) == (b.Type ?? string.Empty)
+                   && (a.Description ?? string.Empty) == (b.Description ?? string.Empty);
+        }
+
+        private void RefreshEventsList(Animal animal)
+        {
+            EventsList.ItemsSource = null;
+            EventsList.ItemsSource = animal.Events.OrderByDescending(x => x.Date).ToList();
+        }
+
+        private void ExitEditMode()
+        {
+            _editingEvent = null;
+
+            if (EventEditorTitle != null) EventEditorTitle.Text = "Neues Ereignis erfassen";
+            if (SaveEventBtn != null) SaveEventBtn.Content = "+ In Akte speichern";
+            if (CancelEditEventBtn != null) CancelEditEventBtn.Visibility = Visibility.Collapsed;
+
+            if (NewEventType != null) NewEventType.Text = "";
+            if (NewEventDesc != null) NewEventDesc.Text = "";
+            if (NewEventDate != null) NewEventDate.SelectedDate = DateTime.Now;
         }
     }
 }
