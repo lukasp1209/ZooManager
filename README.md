@@ -32,7 +32,7 @@ ZooManager ist eine moderne WPF-Anwendung zur effizienten Verwaltung von Tierbes
 Für die Anmeldung stehen Beispielbenutzer zur Verfügung:
 
 - **Manager-Login:** `manager` → `password`
-- **Mitarbeiter-Login (Beispiel):** `max.mustermann` → `password`
+- **Mitarbeiter-Login (Beispiel):** `robert.fischer` → `password`
 
 > [!TIP]
 > Falls die Demo-Zugangsdaten nicht funktionieren, die Anwendung einmal neu starten bzw. prüfen, ob `zoo.db` korrekt erstellt wurde.
