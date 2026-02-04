@@ -13,14 +13,22 @@
         </Grid.ColumnDefinitions>
 
         <!-- Linke Seite: Event Liste -->
-        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0"
+                AutomationProperties.AutomationId="Events.LeftCard">
             <DockPanel>
-                <TextBlock Text="Veranstaltungen" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+                <TextBlock Text="Veranstaltungen" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"
+                           AutomationProperties.AutomationId="Events.Title"/>
                 <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-                    <Button Content="+ Neues Event" Padding="8" Click="AddEventUI_Click" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"/>
-                    <Button Content="Event absagen" Padding="8" Margin="0,8,0,0" Click="DeleteEvent_Click" Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"/>
+                    <Button Content="+ Neues Event" Padding="8" Click="AddEventUI_Click"
+                            Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"
+                            AutomationProperties.AutomationId="Events.AddEventBtn"/>
+                    <Button Content="Event absagen" Padding="8" Margin="0,8,0,0" Click="DeleteEvent_Click"
+                            Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"
+                            AutomationProperties.AutomationId="Events.DeleteEventBtn"/>
                 </StackPanel>
-                <ListBox x:Name="EventsList" BorderThickness="0" Background="Transparent" SelectionChanged="EventsList_SelectionChanged">
+
+                <ListBox x:Name="EventsList" BorderThickness="0" Background="Transparent" SelectionChanged="EventsList_SelectionChanged"
+                         AutomationProperties.AutomationId="Events.EventsList">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="0,4">
@@ -34,29 +42,36 @@
         </Border>
 
         <!-- Rechte Seite -->
-        <Grid Grid.Column="1">
+        <Grid Grid.Column="1" AutomationProperties.AutomationId="Events.RightArea">
             <!-- ANZEIGE-MODUS -->
-            <ScrollViewer x:Name="EventDetailsArea" Visibility="Visible">
+            <ScrollViewer x:Name="EventDetailsArea" Visibility="Visible"
+                          AutomationProperties.AutomationId="Events.DetailsArea">
                 <Border Style="{StaticResource Card}" Margin="0">
                     <StackPanel>
-                        <TextBlock x:Name="SelectedEventTitle" Text="Wählen Sie ein Event" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
-                        <TextBlock x:Name="SelectedEventTime" Text="-" FontSize="16" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,20"/>
+                        <TextBlock x:Name="SelectedEventTitle" Text="Wählen Sie ein Event" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"
+                                   AutomationProperties.AutomationId="Events.Selected.Title"/>
+                        <TextBlock x:Name="SelectedEventTime" Text="-" FontSize="16" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,20"
+                                   AutomationProperties.AutomationId="Events.Selected.Time"/>
                         <Separator Margin="0,0,0,20"/>
                         <TextBlock Text="Beschreibung:" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <TextBlock x:Name="SelectedEventDesc" Text="-" TextWrapping="Wrap" FontSize="14"/>
+                        <TextBlock x:Name="SelectedEventDesc" Text="-" TextWrapping="Wrap" FontSize="14"
+                                   AutomationProperties.AutomationId="Events.Selected.Description"/>
                     </StackPanel>
                 </Border>
             </ScrollViewer>
 
             <!-- EDITOR-MODUS (Neues Event) -->
-            <Border x:Name="EventEditorArea" Style="{StaticResource Card}" Visibility="Collapsed" VerticalAlignment="Top" Margin="0">
+            <Border x:Name="EventEditorArea" Style="{StaticResource Card}" Visibility="Collapsed" VerticalAlignment="Top" Margin="0"
+                    AutomationProperties.AutomationId="Events.EditorArea">
                 <StackPanel>
-                    <TextBlock Text="Neues Event planen" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
-                    
-                    <Label Content="Titel der Veranstaltung:"/>
-                    <TextBox x:Name="NewEventTitle" Margin="0,0,0,12" Padding="8"/>
+                    <TextBlock Text="Neues Event planen" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"
+                               AutomationProperties.AutomationId="Events.Editor.Title"/>
 
-                    <Grid Margin="0,0,0,12">
+                    <Label Content="Titel der Veranstaltung:"/>
+                    <TextBox x:Name="NewEventTitle" Margin="0,0,0,12" Padding="8"
+                             AutomationProperties.AutomationId="Events.Editor.NewEventTitle"/>
+
+                    <Grid Margin="0,0,0,12" AutomationProperties.AutomationId="Events.Editor.DateTimeGrid">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*"/>
                             <ColumnDefinition Width="1*"/>
@@ -64,24 +79,30 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
                             <Label Content="Datum:"/>
-                            <DatePicker x:Name="NewEventDate" Padding="5"/>
+                            <DatePicker x:Name="NewEventDate" Padding="5"
+                                        AutomationProperties.AutomationId="Events.Editor.NewEventDate"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="0,0,8,0">
                             <Label Content="Stunde:"/>
-                            <ComboBox x:Name="HourSelector" Padding="5"/>
+                            <ComboBox x:Name="HourSelector" Padding="5"
+                                      AutomationProperties.AutomationId="Events.Editor.HourSelector"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <Label Content="Minute:"/>
-                            <ComboBox x:Name="MinuteSelector" Padding="5"/>
+                            <ComboBox x:Name="MinuteSelector" Padding="5"
+                                      AutomationProperties.AutomationId="Events.Editor.MinuteSelector"/>
                         </StackPanel>
                     </Grid>
 
                     <Label Content="Beschreibung:"/>
-                    <TextBox x:Name="NewEventDescription" Height="100" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,24" Padding="8"/>
+                    <TextBox x:Name="NewEventDescription" Height="100" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,24" Padding="8"
+                             AutomationProperties.AutomationId="Events.Editor.NewEventDescription"/>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEventEditor_Click"/>
-                        <Button Content="Speichern &amp; Veröffentlichen" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewEvent_Click"/>
+                        <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEventEditor_Click"
+                                AutomationProperties.AutomationId="Events.Editor.CancelBtn"/>
+                        <Button Content="Speichern &amp; Veröffentlichen" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewEvent_Click"
+                                AutomationProperties.AutomationId="Events.Editor.SaveBtn"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

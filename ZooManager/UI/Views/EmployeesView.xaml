@@ -13,18 +13,27 @@
         </Grid.ColumnDefinitions>
 
         <!-- Linke Seite: Mitarbeiterliste -->
-        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0"
+                AutomationProperties.AutomationId="Employees.LeftCard">
             <DockPanel>
-                <TextBlock Text="Personal" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+                <TextBlock Text="Personal" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"
+                           AutomationProperties.AutomationId="Employees.Title"/>
                 <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-                    <Button Content="+ Mitarbeiter anlegen" Padding="8" Click="AddEmployee_Click" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"/>
-                    <Button Content="Mitarbeiter löschen" Padding="8" Margin="0,8,0,0" Click="DeleteEmployee_Click" Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"/>
+                    <Button Content="+ Mitarbeiter anlegen" Padding="8" Click="AddEmployee_Click"
+                            Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"
+                            AutomationProperties.AutomationId="Employees.AddEmployeeBtn"/>
+                    <Button Content="Mitarbeiter löschen" Padding="8" Margin="0,8,0,0" Click="DeleteEmployee_Click"
+                            Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"
+                            AutomationProperties.AutomationId="Employees.DeleteEmployeeBtn"/>
                 </StackPanel>
-                <ListBox x:Name="EmployeesList" BorderThickness="0" SelectionChanged="EmployeesList_SelectionChanged">
+
+                <ListBox x:Name="EmployeesList" BorderThickness="0" SelectionChanged="EmployeesList_SelectionChanged"
+                         AutomationProperties.AutomationId="Employees.EmployeesList">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <!-- Korrigiert: Kein Komma mehr am Ende -->
-                            <TextBlock FontSize="14" Margin="0,4">
+                            <TextBlock FontSize="14" Margin="0,4"
+                       AutomationProperties.Name="{Binding LastName}">
                                 <Run Text="{Binding LastName}" FontSize="16" FontWeight="Bold"/>, <Run Text="{Binding FirstName}" FontSize="16" FontWeight="SemiBold"/>
                             </TextBlock>
                         </DataTemplate>
@@ -36,19 +45,24 @@
         <!-- Rechte Seite -->
         <Grid Grid.Column="1">
             <!-- ANZEIGE-MODUS (Qualifikationen) -->
-            <ScrollViewer x:Name="EmployeeDetailsArea" Visibility="Visible">
+            <ScrollViewer x:Name="EmployeeDetailsArea" Visibility="Visible"
+                          AutomationProperties.AutomationId="Employees.DetailsArea">
                 <Border Style="{StaticResource Card}" Margin="0">
                     <StackPanel>
-                        <TextBlock x:Name="SelectedEmployeeTitle" Text="Wählen Sie einen Mitarbeiter" FontSize="22" FontWeight="Bold" Margin="0,0,0,16"/>
-                        
-                        <TextBlock Text="Qualifikationen:" FontSize="16" FontWeight="SemiBold" Margin="0,10,0,8"/>
-                        <TextBlock Text="Kann folgende Tierarten betreuen:" Margin="0,0,0,12" FontStyle="Italic" Foreground="{StaticResource TextMutedBrush}"/>
-                        
-                        <ItemsControl x:Name="QualificationList">
+                        <TextBlock x:Name="SelectedEmployeeTitle" Text="Wählen Sie einen Mitarbeiter" FontSize="22" FontWeight="Bold" Margin="0,0,0,16"
+                                   AutomationProperties.AutomationId="Employees.SelectedEmployeeTitle"/>
+                        <TextBlock Text="Qualifikationen:" FontSize="16" FontWeight="SemiBold" Margin="0,10,0,8"
+                                   AutomationProperties.AutomationId="Employees.QualificationsTitle"/>
+                        <TextBlock Text="Kann folgende Tierarten betreuen:" Margin="0,0,0,12" FontStyle="Italic"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   AutomationProperties.AutomationId="Employees.QualificationsHint"/>
+
+                        <ItemsControl x:Name="QualificationList"
+                                      AutomationProperties.AutomationId="Employees.QualificationList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <CheckBox Content="{Binding SpeciesName}" 
-                                              IsChecked="{Binding IsQualified}" 
+                                    <CheckBox Content="{Binding SpeciesName}"
+                                              IsChecked="{Binding IsQualified}"
                                               Margin="0,6"
                                               Click="QualificationCheckBox_Click"/>
                                 </DataTemplate>
@@ -59,29 +73,38 @@
             </ScrollViewer>
 
             <!-- EDITOR-MODUS (Neu anlegen) -->
-            <Border x:Name="EmployeeEditorArea" Style="{StaticResource Card}" Visibility="Collapsed" VerticalAlignment="Top" Margin="0">
+            <Border x:Name="EmployeeEditorArea" Style="{StaticResource Card}" Visibility="Collapsed" VerticalAlignment="Top" Margin="0"
+                    AutomationProperties.AutomationId="Employees.EditorArea">
                 <StackPanel>
-                    <TextBlock Text="Mitarbeiter registrieren" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
-                    
+                    <TextBlock Text="Mitarbeiter registrieren" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"
+                               AutomationProperties.AutomationId="Employees.Editor.Title"/>
+
                     <Label Content="Vorname:"/>
-                    <TextBox x:Name="NewEmpFirstName" Margin="0,0,0,12" Padding="8"/>
+                    <TextBox x:Name="NewEmpFirstName" Margin="0,0,0,12" Padding="8"
+                             AutomationProperties.AutomationId="Employees.Editor.NewEmpFirstName"/>
 
                     <Label Content="Nachname:"/>
-                    <TextBox x:Name="NewEmpLastName" Margin="0,0,0,16" Padding="8"/>
+                    <TextBox x:Name="NewEmpLastName" Margin="0,0,0,16" Padding="8"
+                             AutomationProperties.AutomationId="Employees.Editor.NewEmpLastName"/>
 
                     <Separator Margin="0,8,0,16"/>
 
-                    <TextBlock Text="Login für Mitarbeiter" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <TextBlock Text="Login für Mitarbeiter" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"
+                               AutomationProperties.AutomationId="Employees.Editor.LoginSectionTitle"/>
 
                     <Label Content="Benutzername (Login):"/>
-                    <TextBox x:Name="NewEmpUsername" Margin="0,0,0,12" Padding="8"/>
+                    <TextBox x:Name="NewEmpUsername" Margin="0,0,0,12" Padding="8"
+                             AutomationProperties.AutomationId="Employees.Editor.NewEmpUsername"/>
 
                     <Label Content="Passwort:"/>
-                    <PasswordBox x:Name="NewEmpPassword" Margin="0,0,0,24" Padding="8"/>
+                    <PasswordBox x:Name="NewEmpPassword" Margin="0,0,0,24" Padding="8"
+                                 AutomationProperties.AutomationId="Employees.Editor.NewEmpPassword"/>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEmployeeEditor_Click"/>
-                        <Button Content="Speichern" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewEmployee_Click"/>
+                        <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEmployeeEditor_Click"
+                                AutomationProperties.AutomationId="Employees.Editor.CancelBtn"/>
+                        <Button Content="Speichern" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewEmployee_Click"
+                                AutomationProperties.AutomationId="Employees.Editor.SaveBtn"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

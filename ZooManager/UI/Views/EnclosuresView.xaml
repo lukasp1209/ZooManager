@@ -13,19 +13,28 @@
         </Grid.ColumnDefinitions>
 
         <!-- Linke Seite: Anlagenliste -->
-        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0">
+        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,12,0"
+                AutomationProperties.AutomationId="Enclosures.LeftCard">
             <DockPanel>
-                <TextBlock Text="Anlagen Übersicht" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"/>
+                <TextBlock Text="Anlagen Übersicht" DockPanel.Dock="Top" FontSize="20" FontWeight="Bold" Margin="0,0,0,16"
+                           AutomationProperties.AutomationId="Enclosures.Title"/>
                 <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-                    <Button Content="+ Neue Anlage" Padding="8" Click="AddEnclosure_Click" Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"/>
-                    <Button Content="Anlage löschen" Padding="8" Margin="0,8,0,0" Click="DeleteEnclosure_Click" Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"/>
+                    <Button Content="+ Neue Anlage" Padding="8" Click="AddEnclosure_Click"
+                            Background="{StaticResource PrimaryBrush}" Foreground="White" FontWeight="Bold"
+                            AutomationProperties.AutomationId="Enclosures.AddEnclosureBtn"/>
+                    <Button Content="Anlage löschen" Padding="8" Margin="0,8,0,0" Click="DeleteEnclosure_Click"
+                            Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"
+                            AutomationProperties.AutomationId="Enclosures.DeleteEnclosureBtn"/>
                 </StackPanel>
-                <ListBox x:Name="EnclosureList" BorderThickness="0" SelectionChanged="EnclosureList_SelectionChanged">
+
+                <ListBox x:Name="EnclosureList" BorderThickness="0" SelectionChanged="EnclosureList_SelectionChanged"
+                         AutomationProperties.AutomationId="Enclosures.EnclosureList">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="0,4">
                                 <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold"/>
-                                <TextBlock Text="{Binding ClimateType, StringFormat='Klima: {0}'}" FontSize="12" Foreground="{StaticResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding ClimateType, StringFormat='Klima: {0}'}" FontSize="12"
+                                           Foreground="{StaticResource TextMutedBrush}"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -35,12 +44,15 @@
 
         <!-- Rechte Seite -->
         <Grid Grid.Column="1">
-            <ScrollViewer x:Name="EnclosureDetailsArea" Visibility="Visible">
+            <ScrollViewer x:Name="EnclosureDetailsArea" Visibility="Visible"
+                          AutomationProperties.AutomationId="Enclosures.DetailsArea">
                 <Border Style="{StaticResource Card}" Margin="0">
                     <StackPanel>
-                        <TextBlock x:Name="SelectedEnclosureTitle" Text="Wählen Sie eine Anlage" FontSize="24" FontWeight="Bold" Margin="0,0,0,16"/>
-                        
-                        <Grid Margin="0,0,0,20">
+                        <TextBlock x:Name="SelectedEnclosureTitle" Text="Wählen Sie eine Anlage" FontSize="24"
+                                   FontWeight="Bold" Margin="0,0,0,16"
+                                   AutomationProperties.AutomationId="Enclosures.SelectedEnclosureTitle"/>
+
+                        <Grid Margin="0,0,0,20" AutomationProperties.AutomationId="Enclosures.DetailsGrid">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -53,59 +65,81 @@
                             </Grid.RowDefinitions>
 
                             <TextBlock Text="Klima:" FontWeight="SemiBold" Margin="0,4,15,4"/>
-                            <TextBlock x:Name="DetailClimate" Text="-" Grid.Column="1" Margin="0,4,0,4"/>
+                            <TextBlock x:Name="DetailClimate" Text="-" Grid.Column="1" Margin="0,4,0,4"
+                                       AutomationProperties.AutomationId="Enclosures.DetailClimate"/>
 
                             <TextBlock Text="Fläche:" Grid.Row="1" FontWeight="SemiBold" Margin="0,4,15,4"/>
-                            <TextBlock x:Name="DetailArea" Text="-" Grid.Row="1" Grid.Column="1" Margin="0,4,0,4"/>
+                            <TextBlock x:Name="DetailArea" Text="-" Grid.Row="1" Grid.Column="1" Margin="0,4,0,4"
+                                       AutomationProperties.AutomationId="Enclosures.DetailArea"/>
 
                             <TextBlock Text="Kapazität:" Grid.Row="2" FontWeight="SemiBold" Margin="0,4,15,4"/>
-                            <TextBlock x:Name="DetailCapacity" Text="-" Grid.Row="2" Grid.Column="1" Margin="0,4,0,4"/>
-                            
+                            <TextBlock x:Name="DetailCapacity" Text="-" Grid.Row="2" Grid.Column="1" Margin="0,4,0,4"
+                                       AutomationProperties.AutomationId="Enclosures.DetailCapacity"/>
+
                             <TextBlock Text="Wasser:" Grid.Row="3" FontWeight="SemiBold" Margin="0,4,15,4"/>
-                            <TextBlock x:Name="DetailWater" Text="-" Grid.Row="3" Grid.Column="1" Margin="0,4,0,4"/>
+                            <TextBlock x:Name="DetailWater" Text="-" Grid.Row="3" Grid.Column="1" Margin="0,4,0,4"
+                                       AutomationProperties.AutomationId="Enclosures.DetailWater"/>
                         </Grid>
 
                         <Separator Margin="0,10"/>
-                        <TextBlock Text="Tier zuordnen" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,10"/>
-                        <Grid>
+                        <TextBlock Text="Tier zuordnen" FontSize="16" FontWeight="SemiBold" Margin="0,15,0,10"
+                                   AutomationProperties.AutomationId="Enclosures.AssignAnimalTitle"/>
+                        <Grid AutomationProperties.AutomationId="Enclosures.AssignAnimalArea">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <ComboBox x:Name="AllAnimalsSelector" DisplayMemberPath="Name" Margin="0,0,8,0" Padding="8"/>
-                            <Button Grid.Column="1" Content="Zuweisen" Padding="20,8" Click="AssignAnimal_Click" Style="{StaticResource NavButton}" Background="#E8F5E9"/>
+                            <ComboBox x:Name="AllAnimalsSelector" DisplayMemberPath="Name" Margin="0,0,8,0" Padding="8"
+                                      AutomationProperties.AutomationId="Enclosures.AllAnimalsSelector"/>
+                            <Button Grid.Column="1" Content="Zuweisen" Padding="20,8" Click="AssignAnimal_Click"
+                                    Style="{StaticResource NavButton}" Background="#E8F5E9"
+                                    AutomationProperties.AutomationId="Enclosures.AssignAnimalBtn"/>
                         </Grid>
                     </StackPanel>
                 </Border>
             </ScrollViewer>
 
             <!-- EDITOR-MODUS -->
-            <Border x:Name="EnclosureEditorArea" Style="{StaticResource Card}" Visibility="Collapsed" VerticalAlignment="Top" Margin="0">
+            <Border x:Name="EnclosureEditorArea" Style="{StaticResource Card}" Visibility="Collapsed"
+                    VerticalAlignment="Top" Margin="0"
+                    AutomationProperties.AutomationId="Enclosures.EditorArea">
                 <StackPanel>
-                    <TextBlock Text="Neue Anlage anlegen" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
-                    
+                    <TextBlock Text="Neue Anlage anlegen" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"
+                               AutomationProperties.AutomationId="Enclosures.Editor.Title"/>
+
                     <Label Content="Name der Anlage:"/>
-                    <TextBox x:Name="NewEnclosureName" Margin="0,0,0,12" Padding="8"/>
+                    <TextBox x:Name="NewEnclosureName" Margin="0,0,0,12" Padding="8"
+                             AutomationProperties.AutomationId="Enclosures.Editor.NewEnclosureName"/>
 
                     <Label Content="Klimatyp:"/>
-                    <ComboBox x:Name="NewEnclosureClimate" Margin="0,0,0,12" Padding="8">
+                    <ComboBox x:Name="NewEnclosureClimate" Margin="0,0,0,12" Padding="8"
+                              AutomationProperties.AutomationId="Enclosures.Editor.NewEnclosureClimate">
                         <ComboBoxItem Content="Tropisch"/>
                         <ComboBoxItem Content="Trocken"/>
                         <ComboBoxItem Content="Polar"/>
                         <ComboBoxItem Content="Gemäßigt"/>
                     </ComboBox>
-                    
-                    <CheckBox x:Name="NewEnclosureHasWater" Content="Wasserzugang vorhanden (Teich/Pool)" Margin="0,0,0,12" FontWeight="SemiBold"/>
+
+                    <CheckBox x:Name="NewEnclosureHasWater" Content="Wasserzugang vorhanden (Teich/Pool)"
+                              Margin="0,0,0,12" FontWeight="SemiBold"
+                              AutomationProperties.AutomationId="Enclosures.Editor.NewEnclosureHasWater"/>
 
                     <Label Content="Fläche (m²):"/>
-                    <TextBox x:Name="NewEnclosureArea" Margin="0,0,0,12" Padding="8"/>
+                    <TextBox x:Name="NewEnclosureArea" Margin="0,0,0,12" Padding="8"
+                             AutomationProperties.AutomationId="Enclosures.Editor.NewEnclosureArea"/>
 
                     <Label Content="Max. Kapazität:"/>
-                    <TextBox x:Name="NewEnclosureCapacity" Margin="0,0,0,24" Padding="8"/>
+                    <TextBox x:Name="NewEnclosureCapacity" Margin="0,0,0,24" Padding="8"
+                             AutomationProperties.AutomationId="Enclosures.Editor.NewEnclosureCapacity"/>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0" Click="CancelEnclosureEditor_Click"/>
-                        <Button Content="Anlage speichern" Padding="24,8" Background="{StaticResource PrimaryBrush}" Foreground="White" Click="SaveNewEnclosure_Click"/>
+                        <Button Content="Abbrechen" Style="{StaticResource NavButton}" Margin="0,0,12,0"
+                                Click="CancelEnclosureEditor_Click"
+                                AutomationProperties.AutomationId="Enclosures.Editor.CancelBtn"/>
+                        <Button Content="Anlage speichern" Padding="24,8"
+                                Background="{StaticResource PrimaryBrush}" Foreground="White"
+                                Click="SaveNewEnclosure_Click"
+                                AutomationProperties.AutomationId="Enclosures.Editor.SaveBtn"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
