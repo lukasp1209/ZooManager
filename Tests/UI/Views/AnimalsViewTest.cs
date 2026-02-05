@@ -133,4 +133,142 @@ public class AnimalsViewTest : UiTestBase
 
         Assert.That(viewRoot, Is.Not.Null, "AnimalsView wurde nicht geladen (View.Animals).");
     }
+    
+     [Test]
+    public void CreateAnimal_ShouldAppearInAnimalsList()
+    {
+        var main = WaitForWindowByTitleContains("ZooManager");
+        Assert.That(main, Is.Not.Null, "MainWindow nicht gefunden.");
+
+        // Editor öffnen
+        var addBtn = main!.FindFirstDescendant(cf => cf.ByAutomationId("Animals.AddAnimalBtn"))?.AsButton();
+        Assert.That(addBtn, Is.Not.Null, "Animals.AddAnimalBtn nicht gefunden.");
+        addBtn!.Invoke();
+
+        var nameBox = Retry.WhileNull(
+            () => main.FindFirstDescendant(cf => cf.ByAutomationId("Animals.Editor.NewAnimalName"))?.AsTextBox(),
+            timeout: TimeSpan.FromSeconds(6)
+        ).Result;
+        Assert.That(nameBox, Is.Not.Null, "Editor wurde nicht geöffnet (Animals.Editor.NewAnimalName nicht gefunden).");
+
+        var speciesCombo = main.FindFirstDescendant(cf => cf.ByAutomationId("Animals.Editor.SpeciesSelector"))?.AsComboBox();
+        var enclosureCombo = main.FindFirstDescendant(cf => cf.ByAutomationId("Animals.Editor.EnclosureSelector"))?.AsComboBox();
+        var feedingDate = main.FindFirstDescendant(cf => cf.ByAutomationId("Animals.Editor.FeedingDate"));
+        var hourCombo = main.FindFirstDescendant(cf => cf.ByAutomationId("Animals.Editor.FeedingHour"))?.AsComboBox();
+        var minuteCombo = main.FindFirstDescendant(cf => cf.ByAutomationId("Animals.Editor.FeedingMinute"))?.AsComboBox();
+        var saveBtn = main.FindFirstDescendant(cf => cf.ByAutomationId("Animals.Editor.SaveBtn"))?.AsButton();
+
+        Assert.That(speciesCombo, Is.Not.Null, "Animals.Editor.SpeciesSelector nicht gefunden.");
+        Assert.That(enclosureCombo, Is.Not.Null, "Animals.Editor.EnclosureSelector nicht gefunden.");
+        Assert.That(feedingDate, Is.Not.Null, "Animals.Editor.FeedingDate nicht gefunden.");
+        Assert.That(hourCombo, Is.Not.Null, "Animals.Editor.FeedingHour nicht gefunden.");
+        Assert.That(minuteCombo, Is.Not.Null, "Animals.Editor.FeedingMinute nicht gefunden.");
+        Assert.That(saveBtn, Is.Not.Null, "Animals.Editor.SaveBtn nicht gefunden.");
+
+        // Eindeutiger Name
+        var unique = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss_fff");
+        var animalName = $"UiAnimal_{unique}";
+        nameBox!.Text = animalName;
+
+        // Species auswählen (erstes Item)
+        SelectFirstComboItem(speciesCombo!);
+
+        // Enclosure optional: wenn Items vorhanden, erstes nehmen (sonst null ok)
+        TrySelectFirstComboItem(enclosureCombo!);
+
+        // Fütterungszeit: wir lassen Defaults stehen (View setzt Defaultwerte).
+        // Optional könnte man Hour/Minute selektieren:
+        TrySelectComboItemByText(hourCombo!, DateTime.Now.Hour.ToString("D2"));
+        TrySelectComboItemByText(minuteCombo!, "00"); // oder "05"/"10" etc., je nachdem was es gibt
+
+        // Speichern
+        saveBtn!.Invoke();
+
+        // In-App ZooMessageBox schließen (meist Button "Verstanden")
+        DismissInAppMessageBox(main, timeoutSeconds: 8);
+
+        // Warten bis Editor weg ist
+        var editorGone = Retry.WhileFalse(
+            () =>
+            {
+                var editorRoot = main.FindFirstDescendant(cf => cf.ByAutomationId("Animals.EditorArea"));
+                if (editorRoot == null) return true;
+                return editorRoot.Properties.IsOffscreen.Value;
+            },
+            timeout: TimeSpan.FromSeconds(8)
+        ).Result;
+        Assert.That(editorGone, Is.True, "Editor ist nach Speichern weiterhin sichtbar (Dialog blockiert evtl.).");
+
+        // Verifizieren: neues Tier in AnimalsList sichtbar (über Text nodes im Item)
+        var found = Retry.WhileFalse(
+            () =>
+            {
+                var list = main.FindFirstDescendant(cf => cf.ByAutomationId("Animals.AnimalsList"))?.AsListBox();
+                if (list == null) return false;
+
+                foreach (var item in list.Items)
+                {
+                    var texts = item.FindAllDescendants(cf => cf.ByControlType(ControlType.Text))
+                        .Select(t => t.Name)
+                        .Where(n => !string.IsNullOrWhiteSpace(n));
+                    var combined = string.Join(" ", texts);
+
+                    if (combined.Contains(animalName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                return false;
+            },
+            timeout: TimeSpan.FromSeconds(12)
+        ).Result;
+
+        Assert.That(found, Is.True, $"Neues Tier wurde nicht in der Liste gefunden (Suche nach: {animalName}).");
+    }
+
+    private static void SelectFirstComboItem(ComboBox combo)
+    {
+        combo.Expand();
+        Retry.WhileFalse(() => combo.Items.Length > 0, timeout: TimeSpan.FromSeconds(3));
+        combo.Items[0].Select();
+        combo.Collapse();
+    }
+
+    private static void TrySelectFirstComboItem(ComboBox combo)
+    {
+        combo.Expand();
+        if (combo.Items.Length > 0)
+        {
+            combo.Items[0].Select();
+        }
+        combo.Collapse();
+    }
+
+    private static void TrySelectComboItemByText(ComboBox combo, string text)
+    {
+        combo.Expand();
+        var item = combo.Items.FirstOrDefault(i => string.Equals(i.Name, text, StringComparison.OrdinalIgnoreCase));
+        if (item != null)
+        {
+            item.Select();
+        }
+        combo.Collapse();
+    }
+
+    private static void DismissInAppMessageBox(Window mainWindow, int timeoutSeconds)
+    {
+        Retry.WhileFalse(
+            () =>
+            {
+                var btn =
+                    mainWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button).And(cf.ByName("Verstanden")))?.AsButton()
+                    ?? mainWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button).And(cf.ByName("OK")))?.AsButton()
+                    ?? mainWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button).And(cf.ByName("Ok")))?.AsButton();
+
+                if (btn == null) return false;
+
+                try { btn.Invoke(); } catch { return false; }
+                return true;
+            },
+            timeout: TimeSpan.FromSeconds(timeoutSeconds)
+        );
+    }
 }

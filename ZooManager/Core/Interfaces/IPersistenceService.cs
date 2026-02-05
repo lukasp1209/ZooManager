@@ -27,8 +27,8 @@ namespace ZooManager.Core.Interfaces
         bool SaveUser(User user);
 
         void AddAnimalEvent(int animalId, AnimalEvent ev);
-        
+        void DeleteAnimalEvent(int animalId, AnimalEvent ev);
+        void UpdateAnimalEvent(int animalId, AnimalEvent oldEvent, AnimalEvent newEvent);
         void DeleteAnimal(int animalId);
     }
-    
 }

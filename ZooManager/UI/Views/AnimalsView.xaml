@@ -3,9 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="clr-namespace:ZooManager.UI.Converters"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
              AutomationProperties.AutomationId="View.Animals">
+    <UserControl.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+    </UserControl.Resources>
+
     <Grid Margin="24">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300"/>
@@ -26,28 +31,28 @@
                            AutomationProperties.AutomationId="Animals.Title"/>
 
                 <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-                    <Button x:Name="AddAnimalBtn"
-                            Content="+ Neues Tier"
+                    <Button Content="+ Neues Tier"
                             Padding="8"
-                            Click="AddAnimal_Click"
+                            Command="{Binding AddAnimalCommand}"
+                            Visibility="{Binding CanManageAnimals, Converter={StaticResource BoolToVisibility}}"
                             Background="{StaticResource PrimaryBrush}"
                             Foreground="White"
                             FontWeight="Bold"
                             AutomationProperties.AutomationId="Animals.AddAnimalBtn"/>
-                    <Button x:Name="DeleteAnimalBtn"
-                            Content="Tier löschen"
+                    <Button Content="Tier löschen"
                             Padding="8"
                             Margin="0,8,0,0"
-                            Click="DeleteAnimal_Click"
+                            Command="{Binding DeleteAnimalCommand}"
+                            Visibility="{Binding CanManageAnimals, Converter={StaticResource BoolToVisibility}}"
                             Background="#FFEBEE"
                             Foreground="#D32F2F"
                             BorderBrush="#FFCDD2"
                             AutomationProperties.AutomationId="Animals.DeleteAnimalBtn"/>
                 </StackPanel>
 
-                <ListBox x:Name="AnimalsList"
-                         BorderThickness="0"
-                         SelectionChanged="AnimalsList_SelectionChanged"
+                <ListBox BorderThickness="0"
+                         ItemsSource="{Binding Animals}"
+                         SelectedItem="{Binding SelectedAnimal}"
                          AutomationProperties.AutomationId="Animals.AnimalsList">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -69,23 +74,21 @@
 
         <!-- Rechte Seite: Digitale Akte / Editor -->
         <Grid Grid.Column="1" AutomationProperties.AutomationId="Animals.RightArea">
-            <!-- Anzeige-Modus (Digitale Akte) -->
-            <ScrollViewer x:Name="DetailsArea"
-                          Visibility="Visible"
+
+            <!-- Anzeige-Modus -->
+            <ScrollViewer Visibility="{Binding IsDetailsOpen, Converter={StaticResource BoolToVisibility}}"
                           AutomationProperties.AutomationId="Animals.DetailsArea">
                 <StackPanel>
                     <Border Style="{StaticResource Card}" AutomationProperties.AutomationId="Animals.DetailsCard">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <TextBlock x:Name="SelectedAnimalName"
-                                           Text="Name"
+                                <TextBlock Text="{Binding SelectedAnimalName}"
                                            FontSize="24"
                                            FontWeight="Bold"
                                            AutomationProperties.AutomationId="Animals.Selected.Name"/>
                                 <TextBlock Text=" (" FontSize="24" FontWeight="Bold"
                                            Foreground="{StaticResource TextMutedBrush}"/>
-                                <TextBlock x:Name="SelectedAnimalSpecies"
-                                           Text="Art"
+                                <TextBlock Text="{Binding SelectedAnimalSpecies}"
                                            FontSize="24"
                                            FontWeight="Bold"
                                            Foreground="{StaticResource TextMutedBrush}"
@@ -108,23 +111,20 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Text="Name:" FontWeight="SemiBold" Margin="0,4,12,4"/>
-                                <TextBlock x:Name="SelectedAnimalNameDetail"
-                                           Text="-"
+                                <TextBlock Text="{Binding SelectedAnimalName}"
                                            Grid.Column="1"
                                            Margin="0,4,0,4"
                                            AutomationProperties.AutomationId="Animals.Selected.NameDetail"/>
 
                                 <TextBlock Text="Gehege:" Grid.Row="1" FontWeight="SemiBold" Margin="0,4,12,4"/>
-                                <TextBlock x:Name="SelectedAnimalEnclosure"
-                                           Text="-"
+                                <TextBlock Text="{Binding SelectedAnimalEnclosure}"
                                            Grid.Row="1"
                                            Grid.Column="1"
                                            Margin="0,4,0,4"
                                            AutomationProperties.AutomationId="Animals.Selected.Enclosure"/>
 
                                 <TextBlock Text="Nächste Fütterung:" Grid.Row="2" FontWeight="SemiBold" Margin="0,4,12,4"/>
-                                <TextBlock x:Name="SelectedAnimalFeeding"
-                                           Text="-"
+                                <TextBlock Text="{Binding SelectedAnimalFeeding}"
                                            Grid.Row="2"
                                            Grid.Column="1"
                                            Margin="0,4,0,4"
@@ -132,10 +132,10 @@
                                            FontWeight="Bold"
                                            AutomationProperties.AutomationId="Animals.Selected.Feeding"/>
 
-                                <ItemsControl x:Name="DynamicAttributesList"
-                                              Grid.Row="3"
+                                <ItemsControl Grid.Row="3"
                                               Grid.ColumnSpan="2"
                                               Margin="0,10,0,0"
+                                              ItemsSource="{Binding DynamicAttributes}"
                                               AutomationProperties.AutomationId="Animals.DynamicAttributesList">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -162,21 +162,54 @@
                                        Margin="0,0,0,12"
                                        AutomationProperties.AutomationId="Animals.Events.Title"/>
 
-                            <ItemsControl x:Name="EventsList"
+                            <ItemsControl ItemsSource="{Binding Events}"
                                           AutomationProperties.AutomationId="Animals.EventsList">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="0,8">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="120"/>
                                                     <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
+
                                                 <TextBlock Text="{Binding Date, StringFormat=d}"
                                                            Foreground="{StaticResource TextMutedBrush}"/>
+
                                                 <StackPanel Grid.Column="1">
                                                     <TextBlock Text="{Binding Type}" FontWeight="Bold"/>
                                                     <TextBlock Text="{Binding Description}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2"
+                                                            Orientation="Horizontal"
+                                                            VerticalAlignment="Top"
+                                                            Margin="12,0,0,0"
+                                                            Visibility="{Binding DataContext.CanManageEvents, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibility}}">
+                                                    <Button Padding="8,6"
+                                                            Margin="0,0,8,0"
+                                                            Command="{Binding DataContext.EditEventCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}"
+                                                            ToolTip="Bearbeiten"
+                                                            AutomationProperties.AutomationId="Animals.Event.EditBtn">
+                                                        <TextBlock FontFamily="Segoe MDL2 Assets"
+                                                                   FontSize="16"
+                                                                   Text="&#xE70F;" />
+                                                    </Button>
+
+                                                    <Button Padding="8,6"
+                                                            Background="#FFEBEE"
+                                                            Foreground="#D32F2F"
+                                                            BorderBrush="#FFCDD2"
+                                                            Command="{Binding DataContext.DeleteEventCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}"
+                                                            ToolTip="Löschen"
+                                                            AutomationProperties.AutomationId="Animals.Event.DeleteBtn">
+                                                        <TextBlock FontFamily="Segoe MDL2 Assets"
+                                                                   FontSize="16"
+                                                                   Text="&#xE74D;" />
+                                                    </Button>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -192,7 +225,7 @@
                                     BorderThickness="1"
                                     AutomationProperties.AutomationId="Animals.NewEventCard">
                                 <StackPanel>
-                                    <TextBlock Text="Neues Ereignis erfassen"
+                                    <TextBlock Text="{Binding EventEditorTitle}"
                                                FontWeight="Bold"
                                                Margin="0,0,0,12"
                                                Foreground="{StaticResource PrimaryBrush}"/>
@@ -215,38 +248,45 @@
                                         <Label Content="Beschreibung:" Grid.Row="0" Grid.Column="2" FontSize="11"
                                                Foreground="{StaticResource TextMutedBrush}"/>
 
-                                        <DatePicker x:Name="NewEventDate"
-                                                    Grid.Row="1"
+                                        <DatePicker Grid.Row="1"
                                                     Grid.Column="0"
                                                     Margin="0,0,8,0"
                                                     VerticalAlignment="Center"
+                                                    SelectedDate="{Binding NewEventDate}"
                                                     AutomationProperties.AutomationId="Animals.NewEvent.Date"/>
-                                        <TextBox x:Name="NewEventType"
-                                                 Grid.Row="1"
+                                        <TextBox Grid.Row="1"
                                                  Grid.Column="1"
                                                  Margin="0,0,8,0"
                                                  Padding="5"
                                                  VerticalAlignment="Center"
+                                                 Text="{Binding NewEventType, UpdateSourceTrigger=PropertyChanged}"
                                                  ToolTip="z.B. Tierarzt, Transport, Fütterung"
                                                  AutomationProperties.AutomationId="Animals.NewEvent.Type"/>
-                                        <TextBox x:Name="NewEventDesc"
-                                                 Grid.Row="1"
+                                        <TextBox Grid.Row="1"
                                                  Grid.Column="2"
                                                  Padding="5"
                                                  VerticalAlignment="Center"
+                                                 Text="{Binding NewEventDesc, UpdateSourceTrigger=PropertyChanged}"
                                                  ToolTip="Details zum Ereignis"
                                                  AutomationProperties.AutomationId="Animals.NewEvent.Description"/>
                                     </Grid>
 
-                                    <Button Content="+ In Akte speichern"
-                                            Margin="0,16,0,0"
-                                            Padding="20,8"
-                                            HorizontalAlignment="Right"
-                                            Background="{StaticResource PrimaryBrush}"
-                                            Foreground="White"
-                                            FontWeight="SemiBold"
-                                            Click="AddEvent_Click"
-                                            AutomationProperties.AutomationId="Animals.NewEvent.SaveBtn"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                                        <Button Content="Abbrechen"
+                                                Margin="0,0,12,0"
+                                                Padding="14,8"
+                                                Visibility="{Binding IsCancelEditEventVisible, Converter={StaticResource BoolToVisibility}}"
+                                                Command="{Binding CancelEditEventCommand}"
+                                                AutomationProperties.AutomationId="Animals.NewEvent.CancelEditBtn"/>
+
+                                        <Button Content="{Binding SaveEventButtonText}"
+                                                Padding="20,8"
+                                                Background="{StaticResource PrimaryBrush}"
+                                                Foreground="White"
+                                                FontWeight="SemiBold"
+                                                Command="{Binding AddOrUpdateEventCommand}"
+                                                AutomationProperties.AutomationId="Animals.NewEvent.SaveBtn"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -255,9 +295,8 @@
             </ScrollViewer>
 
             <!-- ANLEGE-MODUS (Editor) -->
-            <Border x:Name="EditorArea"
-                    Style="{StaticResource Card}"
-                    Visibility="Collapsed"
+            <Border Style="{StaticResource Card}"
+                    Visibility="{Binding IsEditorOpen, Converter={StaticResource BoolToVisibility}}"
                     VerticalAlignment="Top"
                     AutomationProperties.AutomationId="Animals.EditorArea">
                 <StackPanel>
@@ -268,23 +307,25 @@
                                AutomationProperties.AutomationId="Animals.Editor.Title"/>
 
                     <Label Content="Name des Tieres:"/>
-                    <TextBox x:Name="NewAnimalName"
-                             Margin="0,0,0,12"
+                    <TextBox Margin="0,0,0,12"
                              Padding="8"
+                             Text="{Binding NewAnimalName, UpdateSourceTrigger=PropertyChanged}"
                              AutomationProperties.AutomationId="Animals.Editor.NewAnimalName"/>
 
                     <Label Content="Tierart:"/>
-                    <ComboBox x:Name="SpeciesSelector"
-                              DisplayMemberPath="Name"
+                    <ComboBox DisplayMemberPath="Name"
                               Margin="0,0,0,12"
                               Padding="8"
+                              ItemsSource="{Binding SpeciesOptions}"
+                              SelectedItem="{Binding SelectedSpecies}"
                               AutomationProperties.AutomationId="Animals.Editor.SpeciesSelector"/>
 
                     <Label Content="Gehege:"/>
-                    <ComboBox x:Name="EnclosureSelector"
-                              DisplayMemberPath="Name"
+                    <ComboBox DisplayMemberPath="Name"
                               Margin="0,0,0,12"
                               Padding="8"
+                              ItemsSource="{Binding EnclosureOptions}"
+                              SelectedItem="{Binding SelectedEnclosure}"
                               AutomationProperties.AutomationId="Animals.Editor.EnclosureSelector"/>
 
                     <Label Content="Erste Fütterung (Datum &amp; Uhrzeit):"/>
@@ -295,39 +336,42 @@
                             <ColumnDefinition Width="1*"/>
                         </Grid.ColumnDefinitions>
 
-                        <DatePicker x:Name="NewAnimalFeedingDate"
-                                    Grid.Column="0"
+                        <DatePicker Grid.Column="0"
                                     Margin="0,0,8,0"
                                     Padding="5"
+                                    SelectedDate="{Binding NewAnimalFeedingDate}"
                                     AutomationProperties.AutomationId="Animals.Editor.FeedingDate"/>
-                        <ComboBox x:Name="FeedingHourSelector"
-                                  Grid.Column="1"
+                        <ComboBox Grid.Column="1"
                                   Margin="0,0,8,0"
                                   Padding="5"
                                   ToolTip="Stunde"
+                                  ItemsSource="{Binding FeedingHours}"
+                                  SelectedItem="{Binding SelectedFeedingHour}"
                                   AutomationProperties.AutomationId="Animals.Editor.FeedingHour"/>
-                        <ComboBox x:Name="FeedingMinuteSelector"
-                                  Grid.Column="2"
+                        <ComboBox Grid.Column="2"
                                   Padding="5"
                                   ToolTip="Minute"
+                                  ItemsSource="{Binding FeedingMinutes}"
+                                  SelectedItem="{Binding SelectedFeedingMinute}"
                                   AutomationProperties.AutomationId="Animals.Editor.FeedingMinute"/>
                     </Grid>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
                         <Button Content="Abbrechen"
-                                Style="{StaticResource NavButton}"
                                 Margin="0,0,12,0"
-                                Click="CancelEditor_Click"
+                                Padding="24,8"
+                                Command="{Binding CancelEditorCommand}"
                                 AutomationProperties.AutomationId="Animals.Editor.CancelBtn"/>
                         <Button Content="Speichern"
                                 Padding="24,8"
                                 Background="{StaticResource PrimaryBrush}"
                                 Foreground="White"
-                                Click="SaveNewAnimal_Click"
+                                Command="{Binding SaveNewAnimalCommand}"
                                 AutomationProperties.AutomationId="Animals.Editor.SaveBtn"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
+
         </Grid>
     </Grid>
 </UserControl>
