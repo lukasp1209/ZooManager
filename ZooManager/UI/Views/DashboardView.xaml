@@ -1,11 +1,17 @@
 ﻿<UserControl x:Class="ZooManager.UI.Views.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="clr-namespace:ZooManager.UI.Converters"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800"
              AutomationProperties.AutomationId="View.Dashboard">
+
+    <UserControl.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+    </UserControl.Resources>
+
     <StackPanel Margin="24">
         <TextBlock Text="Dashboard" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextMainBrush}"/>
         <UniformGrid Columns="3" Margin="0,24,0,0">
@@ -13,21 +19,33 @@
             <Border Style="{StaticResource Card}">
                 <StackPanel>
                     <TextBlock Text="Tiere" Foreground="{StaticResource TextMutedBrush}"/>
-                    <TextBlock x:Name="TotalAnimalsText" Text="0" FontSize="32" FontWeight="Bold"/>
+                    <TextBlock x:Name="TotalAnimalsText"
+                               AutomationProperties.AutomationId="TotalAnimalsText"
+                               Text="{Binding TotalAnimals}"
+                               FontSize="32"
+                               FontWeight="Bold"/>
                 </StackPanel>
             </Border>
 
             <Border x:Name="EnclosuresCard" Style="{StaticResource Card}">
                 <StackPanel>
                     <TextBlock Text="Gehege" Foreground="{StaticResource TextMutedBrush}"/>
-                    <TextBlock x:Name="TotalEnclosuresText" Text="0" FontSize="32" FontWeight="Bold"/>
+                    <TextBlock x:Name="TotalEnclosuresText"
+                               AutomationProperties.AutomationId="TotalEnclosuresText"
+                               Text="{Binding TotalEnclosures}"
+                               FontSize="32"
+                               FontWeight="Bold"/>
                 </StackPanel>
             </Border>
 
             <Border x:Name="EmployeesCard" Style="{StaticResource Card}">
                 <StackPanel>
                     <TextBlock Text="Mitarbeiter" Foreground="{StaticResource TextMutedBrush}"/>
-                    <TextBlock x:Name="TotalEmployeesText" Text="0" FontSize="32" FontWeight="Bold"/>
+                    <TextBlock x:Name="TotalEmployeesText"
+                               AutomationProperties.AutomationId="TotalEmployeesText"
+                               Text="{Binding TotalEmployees}"
+                               FontSize="32"
+                               FontWeight="Bold"/>
                 </StackPanel>
             </Border>
 
@@ -41,11 +59,11 @@
                     <Button Content="Gesamten Plan öffnen"
                             HorizontalAlignment="Right"
                             Style="{StaticResource NavButton}"
-                            Click="OpenFeedingPlan_Click"
+                            Command="{Binding OpenFeedingPlanCommand}"
                             AutomationProperties.AutomationId="Dashboard.OpenFeedingPlanBtn"/>
                 </Grid>
 
-                <ItemsControl x:Name="FeedingPreviewList">
+                <ItemsControl ItemsSource="{Binding FeedingPreview}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="0,10">
@@ -62,18 +80,21 @@
         </Border>
 
         <!-- EVENTS PREVIEW -->
-        <Border x:Name="EventsPreviewCard" Style="{StaticResource Card}" Margin="0,24,0,0">
+        <Border x:Name="EventsPreviewCard"
+                Style="{StaticResource Card}"
+                Margin="0,24,0,0"
+                Visibility="{Binding ShowEventsCard, Converter={StaticResource BoolToVisibility}}">
             <StackPanel>
                 <Grid Margin="0,0,0,15">
                     <TextBlock Text="Anstehende Veranstaltungen" FontSize="18" FontWeight="SemiBold"/>
                     <Button Content="Alle Events ansehen"
                             HorizontalAlignment="Right"
                             Style="{StaticResource NavButton}"
-                            Click="OpenEvents_Click"
+                            Command="{Binding OpenEventsCommand}"
                             AutomationProperties.AutomationId="Dashboard.OpenEventsBtn"/>
                 </Grid>
 
-                <ItemsControl x:Name="EventsPreviewList">
+                <ItemsControl ItemsSource="{Binding EventsPreview}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border BorderBrush="#EEE" BorderThickness="0,0,0,1" Padding="0,10">
@@ -93,7 +114,7 @@
                            Text="Keine anstehenden Veranstaltungen."
                            Foreground="{StaticResource TextMutedBrush}"
                            Margin="0,8,0,0"
-                           Visibility="Collapsed"/>
+                           Visibility="{Binding ShowNoEventsText, Converter={StaticResource BoolToVisibility}}"/>
             </StackPanel>
         </Border>
 
