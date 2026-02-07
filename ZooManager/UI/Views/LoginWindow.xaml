@@ -9,7 +9,8 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        ShowInTaskbar="True">
+        ShowInTaskbar="True"
+        Icon="pack://application:,,,/UI/Assets/Logo.ico">
 
     <Border Background="#F4F6F8"
             CornerRadius="12"
