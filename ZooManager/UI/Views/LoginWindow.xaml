@@ -1,6 +1,7 @@
 ﻿<Window x:Class="ZooManager.UI.Views.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:ZooManager.UI.Converters"
         Title="ZooManager - Anmeldung"
         Height="500"
         Width="450"
@@ -12,13 +13,14 @@
         ShowInTaskbar="True"
         Icon="pack://application:,,,/UI/Assets/Logo.ico">
 
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+    </Window.Resources>
+
     <Border Background="#F4F6F8"
             CornerRadius="12"
             BorderBrush="#EEE"
             BorderThickness="1">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.2"/>
-        </Border.Effect>
 
         <Grid>
             <Grid.RowDefinitions>
@@ -106,9 +108,11 @@
                                FontSize="14"
                                Foreground="{StaticResource TextMainBrush}"
                                Margin="0,0,0,8"/>
-                    <TextBox
-    x:Name="UsernameTextBox"
-    AutomationProperties.AutomationId="UsernameTextBox"
+
+                    <TextBox x:Name="UsernameTextBox"
+                             AutomationProperties.AutomationId="UsernameTextBox"
+                             AutomationProperties.Name="UsernameTextBox"
+                             Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                              Height="40"
                              FontSize="14"
                              Padding="12,10"
@@ -121,35 +125,39 @@
                                FontSize="14"
                                Foreground="{StaticResource TextMainBrush}"
                                Margin="0,0,0,8"/>
+
                     <PasswordBox x:Name="PasswordBox"
-                                     AutomationProperties.AutomationId="PasswordBox"
-                                     Height="40"
+                                 AutomationProperties.AutomationId="PasswordBox"
+                                 AutomationProperties.Name="PasswordBox"
+                                 Height="40"
                                  FontSize="14"
                                  Padding="12,10"
                                  BorderBrush="#E0E0E0"
                                  BorderThickness="1"
                                  Margin="0,0,0,10"/>
 
-                    <TextBlock x:Name="ErrorMessage"
-                                   AutomationProperties.AutomationId="ErrorMessage"
-                                   Foreground="#E53935"
-                                   FontSize="13"
-                                   Visibility="Collapsed"
-                               Margin="0,0,0,20"
-                               TextWrapping="Wrap"
-                               HorizontalAlignment="Center"/>
+                    <Label x:Name="ErrorMessage"
+                           AutomationProperties.AutomationId="ErrorMessage"
+                           Content="{Binding ErrorMessage}"
+                           Visibility="{Binding IsErrorVisible, Converter={StaticResource BoolToVisibility}}"
+                           Foreground="#E53935"
+                           FontSize="13"
+                           Margin="0,0,0,20"
+                           HorizontalContentAlignment="Center"
+                           VerticalContentAlignment="Center"/>
 
                     <Button x:Name="LoginButton"
-                                AutomationProperties.AutomationId="LoginButton"
-                                Content="Anmelden"
-                                Height="44"
-                                FontSize="15"
-                                FontWeight="SemiBold"
+                            AutomationProperties.AutomationId="LoginButton"
+                            AutomationProperties.Name="LoginButton"
+                            Command="{Binding LoginCommand}"
+                            Content="Anmelden"
+                            Height="44"
+                            FontSize="15"
+                            FontWeight="SemiBold"
                             Background="{StaticResource PrimaryBrush}"
                             Foreground="White"
                             BorderThickness="0"
                             Cursor="Hand"
-                            Click="LoginButton_Click"
                             Margin="0,10,0,0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
