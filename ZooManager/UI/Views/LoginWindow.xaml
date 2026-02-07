@@ -8,9 +8,10 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         WindowStyle="None"
-        AllowsTransparency="False"
-        Background="#F4F6F8"
-        ShowInTaskbar="True">
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="True"
+        Icon="pack://application:,,,/UI/Assets/Logo.ico">
 
     <Window.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
