@@ -124,6 +124,7 @@ namespace ZooManager.Infrastructure.Persistence.Repositories
                     try
                     {
                         new SqlCommandBuilder(connection)
+                            .WithTransaction(transaction)
                             .WithCommandText(@"
                                 DELETE FROM AnimalEvents
                                 WHERE AnimalId = @animalId AND EventDate = @eventDate 
@@ -135,6 +136,7 @@ namespace ZooManager.Infrastructure.Persistence.Repositories
                             .ExecuteNonQuery();
 
                         new SqlCommandBuilder(connection)
+                            .WithTransaction(transaction)
                             .WithCommandText(@"
                                 INSERT INTO AnimalEvents (AnimalId, EventDate, EventType, Description)
                                 VALUES (@animalId, @eventDate, @eventType, @description)")

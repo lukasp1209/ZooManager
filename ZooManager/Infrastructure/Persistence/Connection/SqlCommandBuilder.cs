@@ -28,9 +28,20 @@ namespace ZooManager.Infrastructure.Persistence.Connection
             return this;
         }
 
+        public SqlCommandBuilder WithTransaction(SqliteTransaction transaction)
+        {
+            _transaction = transaction;
+            return this;
+        }
+
         public SqliteCommand Build()
         {
             var command = new SqliteCommand(_commandText, _connection);
+            
+            if (_transaction != null)
+            {
+                command.Transaction = _transaction;
+            }
             
             foreach (var param in _parameters)
             {
