@@ -261,7 +261,7 @@ namespace ZooManager.Infrastructure.Persistence.Repositories
                         INSERT OR REPLACE INTO AnimalAttributes (AnimalId, FieldDefinitionId, ValueText)
                         SELECT @aid, Id, @val FROM SpeciesFieldDefinitions WHERE FieldName = @fname AND SpeciesId = @sid")
                     .AddParameter("@aid", animal.Id)
-                    .AddParameter("@val", attr.Value.ToString())
+                    .AddParameter("@val", attr.Value?.ToString() ?? string.Empty)
                     .AddParameter("@fname", attr.Key)
                     .AddParameter("@sid", animal.SpeciesId)
                     .ExecuteNonQuery();

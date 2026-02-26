@@ -50,7 +50,18 @@ namespace ZooManager.Infrastructure.Persistence.Connection
             using (var command = Build())
             {
                 var result = command.ExecuteScalar();
-                return result != null ? (T)Convert.ChangeType(result, typeof(T)) : default;
+                if (result == null || result == DBNull.Value)
+                    return default(T);
+                
+                // Handle conversion for common types
+                if (typeof(T) == typeof(int))
+                    return (T)(object)Convert.ToInt32(result);
+                if (typeof(T) == typeof(long))
+                    return (T)(object)Convert.ToInt64(result);
+                if (typeof(T) == typeof(string))
+                    return (T)(object)result.ToString();
+                
+                return (T)result;
             }
         }
     }
