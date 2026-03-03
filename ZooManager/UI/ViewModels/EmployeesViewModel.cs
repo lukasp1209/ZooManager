@@ -12,6 +12,13 @@ namespace ZooManager.UI.ViewModels
 {
     public class EmployeesViewModel : ViewModelBase
     {
+        /// <summary>
+        /// ViewModel for managing employees within the application.
+        /// Handles creation and deletion of employees, assignment of species qualifications,
+        /// and creation of corresponding user accounts (Employee role).
+        /// Implements permission-based behavior and communicates with the persistence
+        /// and authentication services according to the MVVM pattern.
+        /// </summary>
         private readonly IPersistenceService _persistenceService;
         private readonly IAuthenticationService _authService;
         private readonly SqlitePersistenceService? _sqliteDb;
@@ -81,7 +88,6 @@ namespace ZooManager.UI.ViewModels
             set { _newEmpUsername = value; OnPropertyChanged(); }
         }
 
-        // wird über Code-Behind gesetzt (PasswordBox)
         public string? NewEmpPassword
         {
             get => _newEmpPassword;

@@ -22,7 +22,6 @@ namespace ZooManager.UI.ViewModels
             set { _username = value; OnPropertyChanged(); }
         }
 
-        // Wird über Code-Behind gesetzt (PasswordBox ist nicht bindable)
         public string? Password
         {
             get => _password;
@@ -73,7 +72,6 @@ namespace ZooManager.UI.ViewModels
             var user = _authService.AuthenticateUser(username, password);
             if (user != null)
             {
-                // UI-Aktion über Callback, damit ViewModel nicht direkt Window new't.
                 _openMainWindow();
                 _closeLoginWindow();
                 return;
@@ -81,7 +79,6 @@ namespace ZooManager.UI.ViewModels
 
             ShowError("Ungültige Anmeldedaten. Bitte versuchen Sie es erneut.");
 
-            // optional: Passwort nach Fehler zurücksetzen
             Password = string.Empty;
         }
 

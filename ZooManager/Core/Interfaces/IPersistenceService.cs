@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ZooManager.Core.Models;
+﻿using ZooManager.Core.Models;
 
 namespace ZooManager.Core.Interfaces
 {
