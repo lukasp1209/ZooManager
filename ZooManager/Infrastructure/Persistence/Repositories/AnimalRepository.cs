@@ -1,6 +1,4 @@
 ﻿using Microsoft.Data.Sqlite;
-using System;
-using System.Collections.Generic;
 using ZooManager.Core.Models;
 using ZooManager.Infrastructure.Persistence.Connection;
 using ZooManager.Infrastructure.Persistence.Extensions;

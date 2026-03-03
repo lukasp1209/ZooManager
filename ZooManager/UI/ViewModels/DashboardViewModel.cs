@@ -6,6 +6,10 @@ using ZooManager.Core.Models;
 
 namespace ZooManager.UI.ViewModels
 {
+    /// <summary>
+    /// ViewModel for the dashboard.
+    /// Aggregates statistics and preview data (animals, events) based on user role.
+    /// </summary>
     public class DashboardViewModel : ViewModelBase
     {
         private readonly IPersistenceService _persistenceService;

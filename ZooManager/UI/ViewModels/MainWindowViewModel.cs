@@ -91,7 +91,6 @@ namespace ZooManager.UI.ViewModels
 
             var isEmployee = user?.Role == UserRole.Employee;
 
-            // Sichtbarkeit pro Rolle (wie vorher)
             ShowDashboard = true;
             ShowAnimals = true;
             ShowFeedingPlan = true;
@@ -115,13 +114,11 @@ namespace ZooManager.UI.ViewModels
 
             LogoutCommand = new RelayCommand(_ => Logout());
 
-            // Startansicht
             Navigate("Dashboard");
         }
 
         private void Navigate(string target)
         {
-            // Dashboard immer erlaubt
             if (target != "Dashboard" && !_authService.HasPermission($"View{target}"))
             {
                 ZooMessageBox.Show("Sie haben keine Berechtigung für diesen Bereich.", "Zugriff verweigert");

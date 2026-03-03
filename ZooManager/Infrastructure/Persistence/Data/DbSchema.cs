@@ -3,12 +3,16 @@ using ZooManager.Core.Interfaces;
 
 namespace ZooManager.Infrastructure.Persistence.Data
 {
+    /// <summary>
+    /// Creates the required SQLite database tables for the application.
+    /// </summary>
     public class DbSchema : IDbSchema
     {
         public void CreateTables(SqliteConnection connection)
         {
             using (var cmd = connection.CreateCommand())
             {
+                // Creates all tables if they do not already exist
                 cmd.CommandText = @"
                     CREATE TABLE IF NOT EXISTS Species (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -88,6 +92,7 @@ namespace ZooManager.Infrastructure.Persistence.Data
                         FOREIGN KEY(EmployeeId) REFERENCES Employees(Id) ON DELETE SET NULL
                     );
                 ";
+
                 cmd.ExecuteNonQuery();
             }
         }

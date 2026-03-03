@@ -8,6 +8,10 @@ using ZooManager.UI.Views;
 
 namespace ZooManager.UI.ViewModels
 {
+    /// <summary>
+    /// ViewModel for managing animals and their events.
+    /// Handles data loading, CRUD operations and permission-based UI logic (MVVM).
+    /// </summary>
     public class AnimalsViewModel : ViewModelBase
     {
         private readonly IPersistenceService _persistenceService;
