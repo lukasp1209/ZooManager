@@ -21,7 +21,7 @@ namespace ZooManager.Infrastructure.Persistence.Repositories
             {
                 var list = new List<ZooEvent>();
                 using (var command = new SqlCommandBuilder(connection)
-                    .WithCommandText("SELECT Title, Description, Start FROM ZooEvents ORDER BY Start ASC")
+                    .WithCommandText("SELECT Id, Title, Description, Start FROM ZooEvents ORDER BY Start ASC")
                     .Build())
                 {
                     using (var reader = command.ExecuteReader())
@@ -30,6 +30,7 @@ namespace ZooManager.Infrastructure.Persistence.Repositories
                         {
                             list.Add(new ZooEvent
                             {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                 Title = reader.GetString(reader.GetOrdinal("Title")),
                                 Description = reader.GetString(reader.GetOrdinal("Description")),
                                 Start = DateTime.Parse(reader.GetString(reader.GetOrdinal("Start")))
@@ -57,15 +58,14 @@ namespace ZooManager.Infrastructure.Persistence.Repositories
             });
         }
 
-        public void Delete(string title, DateTime start)
+        public void Delete(int eventId)
         {
             _connectionManager.ExecuteWithConnection(connection =>
             {
                 EnableForeignKeys(connection);
                 new SqlCommandBuilder(connection)
-                    .WithCommandText("DELETE FROM ZooEvents WHERE Title = @t AND Start = @s")
-                    .AddParameter("@t", title)
-                    .AddParameter("@s", start.ToString("o"))
+                    .WithCommandText("DELETE FROM ZooEvents WHERE Id = @id")
+                    .AddParameter("@id", eventId)
                     .ExecuteNonQuery();
             });
         }
