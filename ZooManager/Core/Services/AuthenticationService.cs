@@ -3,7 +3,7 @@ using System.Text;
 using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 
-namespace ZooManager.Infrastructure.Authentication
+namespace ZooManager.Core.Services
 {
     /// <summary>
     /// Handles user authentication, password management and role-based authorization.
@@ -11,7 +11,7 @@ namespace ZooManager.Infrastructure.Authentication
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IPersistenceService _persistenceService;
-        private User? _currentUser; // Currently logged-in user
+        private User? _currentUser;
 
         public AuthenticationService(IPersistenceService persistenceService)
         {

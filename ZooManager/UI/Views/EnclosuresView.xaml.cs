@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using ZooManager.Core.Interfaces;
 using ZooManager.Core.Models;
 using ZooManager.Core.Services;
-using ZooManager.Infrastructure.Persistence;
 using ZooManager.Infrastructure.Configuration;
 using ZooManager.Infrastructure.Persistence.Connection;
 
@@ -58,13 +55,12 @@ namespace ZooManager.UI.Views
             {
                 var species = _species.FirstOrDefault(s => s.Id == selectedAnimal.SpeciesId);
                 int currentCount = _allAnimals.Count(a => a.EnclosureId == selectedEnclosure.Id);
-
-                // ANF2: Validierung
-                if (_validator.IsSuitable(selectedAnimal, species, selectedEnclosure, currentCount))
+                
+                if (EnclosureValidationService.IsSuitable(selectedAnimal, species, selectedEnclosure, currentCount))
                 {
                     selectedAnimal.EnclosureId = selectedEnclosure.Id;
                     _db.SaveAnimals(new List<Animal> { selectedAnimal });
-                    LoadData(); // Daten neu laden
+                    LoadData();
                     ZooMessageBox.Show($"{selectedAnimal.Name} wurde erfolgreich zugeordnet.", "Erfolg");
                 }
                 else
@@ -134,7 +130,6 @@ namespace ZooManager.UI.Views
                     ZooMessageBox.Show("Anlage wurde gelöscht.", "Info");
                     LoadData();
                     
-                    // UI zurücksetzen
                     EnclosureDetailsArea.Visibility = Visibility.Collapsed;
                 }
                 catch (System.Exception ex)

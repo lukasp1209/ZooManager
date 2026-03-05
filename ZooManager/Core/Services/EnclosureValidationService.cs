@@ -1,12 +1,10 @@
 ﻿using ZooManager.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ZooManager.Core.Services
 {
     public class EnclosureValidationService
     {
-        public bool IsSuitable(Animal animal, Species species, Enclosure enclosure, int currentAnimalCountInEnclosure)
+        public static bool IsSuitable(Animal animal, Species species, Enclosure enclosure, int currentAnimalCountInEnclosure)
         {
             if (species.RequiredClimate != enclosure.ClimateType)
                 return false;

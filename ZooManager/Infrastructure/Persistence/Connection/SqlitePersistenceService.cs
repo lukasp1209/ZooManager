@@ -54,7 +54,6 @@ namespace ZooManager.Infrastructure.Persistence.Connection
             InitializeDatabase();
         }
 
-        // Creates tables and inserts test data if database is empty
         private void InitializeDatabase()
         {
             _connectionManager.ExecuteWithConnection(connection =>
@@ -78,7 +77,6 @@ namespace ZooManager.Infrastructure.Persistence.Connection
             return count == 0;
         }
 
-        // Inserts demo/test data on first run
         private void InsertTestData(SqliteConnection connection)
         {
             DisableForeignKeys(connection);
@@ -109,7 +107,6 @@ namespace ZooManager.Infrastructure.Persistence.Connection
                 .ExecuteNonQuery();
         }
 
-        // Generates SHA256 password hash (static salt)
         private string GeneratePasswordHash(string password)
         {
             using var sha256 = SHA256.Create();
@@ -120,13 +117,9 @@ namespace ZooManager.Infrastructure.Persistence.Connection
             return Convert.ToBase64String(hashedBytes);
         }
 
-        // -------------------- User --------------------
-
         public User GetUserByUsername(string username) => _userRepository.GetByUsername(username);
         public User GetUserById(int userId) => _userRepository.GetById(userId);
         public bool SaveUser(User user) => _userRepository.Save(user);
-
-        // -------------------- Animal --------------------
 
         public IEnumerable<Animal> LoadAnimals() => _animalRepository.GetAll();
         public IEnumerable<Animal> LoadAnimalsForEmployee(int employeeId) => _animalRepository.GetForEmployee(employeeId);
@@ -137,27 +130,19 @@ namespace ZooManager.Infrastructure.Persistence.Connection
         public void UpdateAnimalEvent(int animalId, AnimalEvent oldEvent, AnimalEvent newEvent) =>
             _animalRepository.UpdateEvent(animalId, oldEvent, newEvent);
 
-        // -------------------- Employee --------------------
-
         public IEnumerable<Employee> LoadEmployees() => _employeeRepository.GetAll();
         public void SaveEmployees(IEnumerable<Employee> employees) => _employeeRepository.Save(employees);
         public void DeleteEmployee(int employeeId) => _employeeRepository.Delete(employeeId);
         public void SaveEmployeeQualifications(int employeeId, List<int> speciesIds) =>
             _employeeRepository.SaveQualifications(employeeId, speciesIds);
 
-        // -------------------- Species --------------------
-
         public IEnumerable<Species> LoadSpecies() => _speciesRepository.GetAll();
         public void SaveSpecies(IEnumerable<Species> speciesList) => _speciesRepository.Save(speciesList);
         public void DeleteSpecies(int speciesId) => _speciesRepository.Delete(speciesId);
 
-        // -------------------- Enclosure --------------------
-
         public IEnumerable<Enclosure> LoadEnclosures() => _enclosureRepository.GetAll();
         public void SaveEnclosures(IEnumerable<Enclosure> enclosures) => _enclosureRepository.Save(enclosures);
         public void DeleteEnclosure(int enclosureId) => _enclosureRepository.Delete(enclosureId);
-
-        // -------------------- Events --------------------
 
         public IEnumerable<ZooEvent> LoadEvents() => _eventRepository.GetAll();
         public void SaveEvents(IEnumerable<ZooEvent> events) => _eventRepository.Save(events);

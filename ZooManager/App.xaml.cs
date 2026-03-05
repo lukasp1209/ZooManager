@@ -1,13 +1,12 @@
 ﻿using System.Windows;
-using ZooManager.Infrastructure.Persistence;
 using ZooManager.Core.Interfaces;
-using ZooManager.Infrastructure.Authentication;
+using ZooManager.Core.Services;
 using ZooManager.Infrastructure.Persistence.Connection;
 using ZooManager.UI.Views;
 
 namespace ZooManager
 {
-    public partial class App : Application
+    public partial class App
     {
         protected override void OnStartup(StartupEventArgs e)
         {
