@@ -90,7 +90,7 @@ namespace ZooManager.UI.Views
             {
                 try 
                 {
-                    _db.DeleteEvent(selected.Title, selected.Start);
+                    _db.DeleteEvent(selected.Id);
                     ZooMessageBox.Show($"Das Event '{selected.Title}' wurde erfolgreich gelöscht.", "Erfolg");
                     LoadData();
                     

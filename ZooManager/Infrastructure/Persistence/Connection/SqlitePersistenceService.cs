@@ -146,6 +146,6 @@ namespace ZooManager.Infrastructure.Persistence.Connection
 
         public IEnumerable<ZooEvent> LoadEvents() => _eventRepository.GetAll();
         public void SaveEvents(IEnumerable<ZooEvent> events) => _eventRepository.Save(events);
-        public void DeleteEvent(string title, DateTime start) => _eventRepository.Delete(title, start);
+        public void DeleteEvent(int eventId) => _eventRepository.Delete(eventId);
     }
 }
